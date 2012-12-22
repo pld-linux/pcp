@@ -13,7 +13,7 @@ Name:		pcp
 Version:	3.6.10
 Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
-Group:		Libraries
+Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
 # Source0-md5:	f39a581638ab9419d30f3d814841938b
 Patch0:		%{name}-ps.patch
