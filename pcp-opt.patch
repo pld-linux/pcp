@@ -1,0 +1,11 @@
+--- pcp-3.6.10/configure.in.orig	2012-12-22 15:49:53.253378178 +0100
++++ pcp-3.6.10/configure.in	2012-12-22 16:14:15.650014365 +0100
+@@ -92,7 +92,7 @@
+     test -f /etc/slackware-version && target_distro=slackware
+     test -f /etc/gentoo-release && target_distro=gentoo
+     test -f /etc/mandriva-release && target_distro=mandriva
+-    export CFLAGS="-fpic -fno-strict-aliasing -D_GNU_SOURCE"
++    export CFLAGS="$CFLAGS -fPIC -fno-strict-aliasing -D_GNU_SOURCE"
+ elif test $target_os = darwin
+ then
+     AC_DEFINE(IS_DARWIN)

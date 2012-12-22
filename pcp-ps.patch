@@ -1,0 +1,31 @@
+--- pcp-3.6.10/configure.in.orig	2012-11-19 00:47:34.000000000 +0100
++++ pcp-3.6.10/configure.in	2012-12-16 19:50:49.390548609 +0100
+@@ -697,15 +697,7 @@
+ NR == 1			{ if ($1 != "UID" && $1 != "USER") exit
+ 			  if ($2 != "PID") exit
+ 			}
+-# Unix variants
+-$2 == 1 && / init/	{ print "OK"; exit }
+-$2 == 1 && / \/etc\/init/ { print "OK"; exit }
+-# Fedora 9
+-$2 == 1 && / \/sbin\/init/ { print "OK"; exit }
+-# Fedora 15
+-$2 == 1 && / \/bin\/systemd/ { print "OK"; exit }
+-# Fedora 17
+-$2 == 1 && / \/usr\/lib\/systemd\/systemd/ { print "OK"; exit }'`
++$2 ~ /^[[0-9]]+$/ && /configure/	{ print "OK"; exit }'`
+     if test "$ans" = OK
+     then
+ 	pcp_ps_have_bsd=false
+@@ -719,10 +711,7 @@
+ NR == 1			{ if ($1 != "UID" && $1 != "USER") exit
+ 			  if ($2 != "PID") exit
+ 			}
+-$2 == 1 && / init/	{ print "OK"; exit }
+-$2 == 1 && / \/sbin\/init/ { print "OK"; exit }
+-$2 == 1 && / \/sbin\/launchd/ { print "OK"; exit }
+-$2 == 1 && / \/init/	{ print "OK"; exit }'`
++$2 ~ /^[[0-9]]+$/ && /configure/	{ print "OK"; exit }'`
+     if test "$ans" = OK
+     then
+ 	pcp_ps_have_bsd=true
