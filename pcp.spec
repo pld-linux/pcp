@@ -224,7 +224,6 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) %{_libdir}/pcp/bin/pmnewlog
 %attr(755,root,root) %{_libdir}/pcp/bin/pmnsadd
 %attr(755,root,root) %{_libdir}/pcp/bin/pmnsdel
-%attr(755,root,root) %{_libdir}/pcp/bin/pmnsmerge
 %attr(755,root,root) %{_libdir}/pcp/bin/pmpost
 %attr(755,root,root) %{_libdir}/pcp/bin/pmproxy
 %attr(755,root,root) %{_libdir}/pcp/bin/pmsignal
@@ -780,7 +779,6 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmnewlog.1*
 %{_mandir}/man1/pmnsadd.1*
 %{_mandir}/man1/pmnsdel.1*
-%{_mandir}/man1/pmnsmerge.1*
 %{_mandir}/man1/pmpost.1*
 %{_mandir}/man1/pmprobe.1*
 %{_mandir}/man1/pmproxy.1*
@@ -809,17 +807,11 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) %{_libdir}/libpcp_trace.so.2
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp.conf
 %{_sysconfdir}/pcp.env
-%{_mandir}/man1/newhelp.1*
-%{_mandir}/man1/pmcpp.1*
-%{_mandir}/man4/mmv.4*
-%{_mandir}/man4/pcp.conf.4*
-%{_mandir}/man4/pcp.env.4*
-%{_mandir}/man4/pmieconf.4*
-%{_mandir}/man4/pmns.4*
 %dir %{_libdir}/pcp
 %dir %{_libdir}/pcp/bin
 %attr(755,root,root) %{_libdir}/pcp/bin/newhelp
 %attr(755,root,root) %{_libdir}/pcp/bin/pmcpp
+%attr(755,root,root) %{_libdir}/pcp/bin/pmnsmerge
 %dir /var/lib/pcp
 %dir /var/lib/pcp/pmns
 %config(missingok) /var/lib/pcp/pmns/.NeedRebuild
@@ -832,6 +824,14 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 /var/lib/pcp/pmns/stdpmid.pcp
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmns/stdpmid.local
 %ghost /var/lib/pcp/pmns/stdpmid
+%{_mandir}/man1/newhelp.1*
+%{_mandir}/man1/pmcpp.1*
+%{_mandir}/man1/pmnsmerge.1*
+%{_mandir}/man4/mmv.4*
+%{_mandir}/man4/pcp.conf.4*
+%{_mandir}/man4/pcp.env.4*
+%{_mandir}/man4/pmieconf.4*
+%{_mandir}/man4/pmns.4*
 
 %files devel
 %defattr(644,root,root,755)
