@@ -2,9 +2,6 @@
 # - PLDify init scripts
 # - /var/lib/pcp looks like mess, configs/variable data/other files (maybe consult Debian packaging?)
 #
-# Conditional build:
-%bcond_without	apidocs		# do not build and package API docs
-#
 %include	/usr/lib/rpm/macros.perl
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
