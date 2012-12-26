@@ -4,7 +4,6 @@
 #
 # Conditional build:
 %bcond_without	apidocs		# do not build and package API docs
-%bcond_without	static_libs	# don't build static libraries
 #
 %include	/usr/lib/rpm/macros.perl
 Summary:	Performance Co-Pilot - system level performance monitoring and management
@@ -128,7 +127,6 @@ Bashowe uzupełnianie nazw dla narzędzi PCP.
 %build
 %{__autoconf}
 %configure \
-	%{!?with_static_libs:--disable-static} \
 	--with-rcdir=/etc/rc.d/init.d
 %{__make}
 
@@ -143,7 +141,6 @@ install -d $RPM_BUILD_ROOT%{_sysconfdir}
 	HAVE_GZIPPED_MANPAGES=false \
 	HAVE_LZMAED_MANPAGES=false \
 	HAVE_XZED_MANPAGES=false
-#	PCP_RC_DIR=/etc/rc.d/init.d
 
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
 %py_postclean
