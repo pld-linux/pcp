@@ -1,6 +1,7 @@
 # TODO:
+# - pcp user/group, log dirs (see Debian packaging)
 # - PLDify init scripts
-# - /var/lib/pcp looks like mess, configs/variable data/other files (maybe consult Debian packaging?)
+# - /var/lib/pcp looks like mess, configs/variable data/scripts/ELFs (maybe consult Debian packaging?)
 #
 %include	/usr/lib/rpm/macros.perl
 Summary:	Performance Co-Pilot - system level performance monitoring and management
@@ -125,6 +126,9 @@ Bashowe uzupełnianie nazw dla narzędzi PCP.
 %{__autoconf}
 %configure \
 	--with-rcdir=/etc/rc.d/init.d
+# ensure not *zipping man pages on install
+%{__sed} -i -e '/^HAVE_.*ED_MANPAGES/s,true,false,' src/include/builddefs
+
 %{__make}
 
 %install
@@ -139,6 +143,8 @@ install -d $RPM_BUILD_ROOT%{_sysconfdir}
 	HAVE_LZMAED_MANPAGES=false \
 	HAVE_XZED_MANPAGES=false
 
+install -p src/pmns/stdpmid $RPM_BUILD_ROOT/var/lib/pcp/pmns
+
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
 %py_postclean
 
@@ -152,7 +158,12 @@ install -d $RPM_BUILD_ROOT%{_sysconfdir}
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post	libs -p /sbin/ldconfig
+%post	libs
+/sbin/ldconfig
+cd /var/lib/pcp/pmns
+umask 022
+PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
+
 %postun	libs -p /sbin/ldconfig
 
 %files
@@ -189,9 +200,37 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/pmval
 %attr(755,root,root) %{_bindir}/sar2pcp
 %attr(755,root,root) %{_bindir}/sheet2pcp
-%dir %{_libdir}/pcp
-%dir %{_libdir}/pcp/bin
-%attr(755,root,root) %{_libdir}/pcp/bin/*
+%attr(755,root,root) %{_libdir}/pcp/bin/autofsd-probe
+%attr(755,root,root) %{_libdir}/pcp/bin/chkhelp
+%attr(755,root,root) %{_libdir}/pcp/bin/install-sh
+%attr(755,root,root) %{_libdir}/pcp/bin/mkaf
+%attr(755,root,root) %{_libdir}/pcp/bin/pmcd
+%attr(755,root,root) %{_libdir}/pcp/bin/pmcd_wait
+%attr(755,root,root) %{_libdir}/pcp/bin/pmhostname
+%attr(755,root,root) %{_libdir}/pcp/bin/pmie_check
+%attr(755,root,root) %{_libdir}/pcp/bin/pmie_daily
+%attr(755,root,root) %{_libdir}/pcp/bin/pmie_email
+%attr(755,root,root) %{_libdir}/pcp/bin/pmiestatus
+%attr(755,root,root) %{_libdir}/pcp/bin/pmlock
+%attr(755,root,root) %{_libdir}/pcp/bin/pmlogconf
+%attr(755,root,root) %{_libdir}/pcp/bin/pmlogconf-setup
+%attr(755,root,root) %{_libdir}/pcp/bin/pmlogextract
+%attr(755,root,root) %{_libdir}/pcp/bin/pmlogger
+%attr(755,root,root) %{_libdir}/pcp/bin/pmlogger_check
+%attr(755,root,root) %{_libdir}/pcp/bin/pmlogger_daily
+%attr(755,root,root) %{_libdir}/pcp/bin/pmlogger_merge
+%attr(755,root,root) %{_libdir}/pcp/bin/pmlogreduce
+%attr(755,root,root) %{_libdir}/pcp/bin/pmlogrewrite
+%attr(755,root,root) %{_libdir}/pcp/bin/pmnewlog
+%attr(755,root,root) %{_libdir}/pcp/bin/pmnsadd
+%attr(755,root,root) %{_libdir}/pcp/bin/pmnsdel
+%attr(755,root,root) %{_libdir}/pcp/bin/pmnsmerge
+%attr(755,root,root) %{_libdir}/pcp/bin/pmpost
+%attr(755,root,root) %{_libdir}/pcp/bin/pmproxy
+%attr(755,root,root) %{_libdir}/pcp/bin/pmsignal
+%attr(755,root,root) %{_libdir}/pcp/bin/pmsleep
+%attr(755,root,root) %{_libdir}/pcp/bin/pmwtf
+%attr(755,root,root) %{_libdir}/pcp/bin/telnet-probe
 %dir %{_datadir}/pcp
 %dir %{_datadir}/pcp/lib
 %attr(755,root,root) %{_datadir}/pcp/lib/ReplacePmnsSubtree
@@ -207,7 +246,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(754,root,root) /etc/rc.d/init.d/pmie
 %attr(754,root,root) /etc/rc.d/init.d/pmlogger
 %attr(754,root,root) /etc/rc.d/init.d/pmproxy
-%dir /var/lib/pcp
 %dir /var/lib/pcp/config
 %dir /var/lib/pcp/config/pmafm
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmafm/pcp
@@ -365,7 +403,6 @@ rm -rf $RPM_BUILD_ROOT
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_migrate.conf
 %dir /var/lib/pcp/config/pmproxy
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmproxy/pmproxy.options
-# FIXME: some ELFs in this tree
 %dir /var/lib/pcp/pmdas
 %dir /var/lib/pcp/pmdas/apache
 %doc /var/lib/pcp/pmdas/apache/README
@@ -666,16 +703,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/pmdazimbra.pl
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/zimbraprobe
-%dir /var/lib/pcp/pmns
-%config(missingok) /var/lib/pcp/pmns/.NeedRebuild
-%attr(755,root,root) /var/lib/pcp/pmns/Make.stdpmid
-%attr(755,root,root) /var/lib/pcp/pmns/Rebuild
-/var/lib/pcp/pmns/Makefile
-/var/lib/pcp/pmns/root_linux
-/var/lib/pcp/pmns/root_mmv
-/var/lib/pcp/pmns/root_pmcd
-/var/lib/pcp/pmns/stdpmid.pcp
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmns/stdpmid.local
 %{_mandir}/man1/PCPIntro.1*
 %{_mandir}/man1/autofsd-probe.1*
 %{_mandir}/man1/chkhelp.1*
@@ -685,7 +712,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/iostat2pcp.1*
 %{_mandir}/man1/mkaf.1*
 %{_mandir}/man1/mrtg2pcp.1*
-%{_mandir}/man1/newhelp.1*
 %{_mandir}/man1/pcp.1*
 %{_mandir}/man1/pmafm.1*
 %{_mandir}/man1/pmcd.1*
@@ -693,7 +719,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/pmclient.1*
 %{_mandir}/man1/pmcollectl.1*
 %{_mandir}/man1/pmconfig.1*
-%{_mandir}/man1/pmcpp.1*
 %{_mandir}/man1/pmdabash.1*
 %{_mandir}/man1/pmdabonding.1*
 %{_mandir}/man1/pmdacisco.1*
@@ -784,11 +809,29 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libpcp_trace.so.2
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp.conf
 %{_sysconfdir}/pcp.env
+%{_mandir}/man1/newhelp.1*
+%{_mandir}/man1/pmcpp.1*
 %{_mandir}/man4/mmv.4*
 %{_mandir}/man4/pcp.conf.4*
 %{_mandir}/man4/pcp.env.4*
 %{_mandir}/man4/pmieconf.4*
 %{_mandir}/man4/pmns.4*
+%dir %{_libdir}/pcp
+%dir %{_libdir}/pcp/bin
+%attr(755,root,root) %{_libdir}/pcp/bin/newhelp
+%attr(755,root,root) %{_libdir}/pcp/bin/pmcpp
+%dir /var/lib/pcp
+%dir /var/lib/pcp/pmns
+%config(missingok) /var/lib/pcp/pmns/.NeedRebuild
+%attr(755,root,root) /var/lib/pcp/pmns/Make.stdpmid
+%attr(755,root,root) /var/lib/pcp/pmns/Rebuild
+/var/lib/pcp/pmns/Makefile
+/var/lib/pcp/pmns/root_linux
+/var/lib/pcp/pmns/root_mmv
+/var/lib/pcp/pmns/root_pmcd
+/var/lib/pcp/pmns/stdpmid.pcp
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmns/stdpmid.local
+%ghost /var/lib/pcp/pmns/stdpmid
 
 %files devel
 %defattr(644,root,root,755)
