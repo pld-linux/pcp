@@ -8,7 +8,7 @@ Summary:	Performance Co-Pilot - system level performance monitoring and manageme
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
 Version:	3.6.10
-Release:	1
+Release:	2
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
@@ -187,7 +187,6 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) %{_bindir}/pmie
 %attr(755,root,root) %{_bindir}/pmie2col
 %attr(755,root,root) %{_bindir}/pmieconf
-%attr(755,root,root) %{_bindir}/pminfo
 %attr(755,root,root) %{_bindir}/pmlc
 %attr(755,root,root) %{_bindir}/pmlogcheck
 %attr(755,root,root) %{_bindir}/pmloglabel
@@ -762,7 +761,6 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmie_daily.1*
 %{_mandir}/man1/pmieconf.1*
 %{_mandir}/man1/pmiestatus.1*
-%{_mandir}/man1/pminfo.1*
 %{_mandir}/man1/pmlc.1*
 %{_mandir}/man1/pmlock.1*
 %{_mandir}/man1/pmlogcheck.1*
@@ -795,6 +793,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 
 %files libs
 %defattr(644,root,root,755)
+%attr(755,root,root) %{_bindir}/pminfo
 # NOTE: some of them are compatibility symlinks; regular files are SONAMEs directly
 %attr(755,root,root) %{_libdir}/libpcp.so.2
 %attr(755,root,root) %{_libdir}/libpcp.so.3
@@ -826,6 +825,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %ghost /var/lib/pcp/pmns/stdpmid
 %{_mandir}/man1/newhelp.1*
 %{_mandir}/man1/pmcpp.1*
+%{_mandir}/man1/pminfo.1*
 %{_mandir}/man1/pmnsmerge.1*
 %{_mandir}/man4/mmv.4*
 %{_mandir}/man4/pcp.conf.4*
