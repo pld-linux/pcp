@@ -7,12 +7,12 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.6.10
-Release:	2
+Version:	3.7.1
+Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	f39a581638ab9419d30f3d814841938b
+# Source0-md5:	7131aa83ecd9ab3a409ffacd41a3b43a
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 URL:		http://oss.sgi.com/projects/pcp/
@@ -148,8 +148,6 @@ install -p src/pmns/stdpmid $RPM_BUILD_ROOT/var/lib/pcp/pmns
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
 %py_postclean
 
-# ???
-%{__rm} -r $RPM_BUILD_ROOT/default
 # could be eventually packaged in examplesdir / docdir resp.
 %{__rm} -r $RPM_BUILD_ROOT%{_datadir}/pcp/{demos,examples}
 # tests
@@ -239,6 +237,25 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_datadir}/pcp/lib/rc-proc.sh
 %{_datadir}/pcp/lib/rc-proc.sh.minimal
 %{_sysconfdir}/pcp.sh
+%dir %{_sysconfdir}/pcp
+%dir %{_sysconfdir}/pcp/pmcd
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmcd/pmcd.conf
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmcd/pmcd.options
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmcd/rc.local
+%dir %{_sysconfdir}/pcp/pmie
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/config.default
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/control
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/crontab
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/stomp
+%dir %{_sysconfdir}/pcp/pmie/cisco
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/cisco/in_util
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/cisco/out_util
+%{_sysconfdir}/pcp/pmlogger/Makefile
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/config.*
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/control
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/crontab
+%dir %{_sysconfdir}/pcp/pmproxy
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmproxy/pmproxy.options
 %attr(754,root,root) /etc/rc.d/init.d/pcp
 %attr(754,root,root) /etc/rc.d/init.d/pmcd
 %attr(754,root,root) /etc/rc.d/init.d/pmie
@@ -247,10 +264,6 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %dir /var/lib/pcp/config
 %dir /var/lib/pcp/config/pmafm
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmafm/pcp
-%dir /var/lib/pcp/config/pmcd
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmcd/pmcd.conf
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmcd/pmcd.options
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmcd/rc.local
 %dir /var/lib/pcp/config/pmchart
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Apache
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Cisco
@@ -258,14 +271,6 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Sample
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Web.*
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/shping.*
-%dir /var/lib/pcp/config/pmie
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmie/config.default
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmie/control
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmie/crontab
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmie/stomp
-%dir /var/lib/pcp/config/pmie/cisco
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmie/cisco/in_util
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmie/cisco/out_util
 %dir /var/lib/pcp/config/pmieconf
 %dir /var/lib/pcp/config/pmieconf/cpu
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/cpu/context_switch
@@ -393,14 +398,8 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %dir /var/lib/pcp/config/pmlogconf/zimbra
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/zimbra/all
 %dir /var/lib/pcp/config/pmlogger
-/var/lib/pcp/config/pmlogger/Makefile
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogger/config.*
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogger/control
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogger/crontab
 %dir /var/lib/pcp/config/pmlogrewrite
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_migrate.conf
-%dir /var/lib/pcp/config/pmproxy
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmproxy/pmproxy.options
 %dir /var/lib/pcp/pmdas
 %dir /var/lib/pcp/pmdas/apache
 %doc /var/lib/pcp/pmdas/apache/README
@@ -443,6 +442,14 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) /var/lib/pcp/pmdas/elasticsearch/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/elasticsearch/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/elasticsearch/pmdaelasticsearch.pl
+%dir /var/lib/pcp/pmdas/gfs2
+%attr(755,root,root) /var/lib/pcp/pmdas/gfs2/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/gfs2/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/gfs2/pmdagfs2
+/var/lib/pcp/pmdas/gfs2/domain.h
+/var/lib/pcp/pmdas/gfs2/help
+/var/lib/pcp/pmdas/gfs2/pmns
+/var/lib/pcp/pmdas/gfs2/root
 %dir /var/lib/pcp/pmdas/gpsd
 %attr(755,root,root) /var/lib/pcp/pmdas/gpsd/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/gpsd/Remove
@@ -640,6 +647,17 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 /var/lib/pcp/pmdas/summary/help
 /var/lib/pcp/pmdas/summary/pmns
 /var/lib/pcp/pmdas/summary/root
+/var/lib/pcp/pmdas/summary/expr.pmie
+%dir /var/lib/pcp/pmdas/systemd
+%doc /var/lib/pcp/pmdas/systemd/README
+%attr(755,root,root) /var/lib/pcp/pmdas/systemd/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/systemd/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/systemd/pmdasystemd
+%attr(755,root,root) /var/lib/pcp/pmdas/systemd/pmda_systemd.so
+/var/lib/pcp/pmdas/systemd/domain.h
+/var/lib/pcp/pmdas/systemd/help
+/var/lib/pcp/pmdas/systemd/pmns
+/var/lib/pcp/pmdas/systemd/root
 /var/lib/pcp/pmdas/summary/expr.pmie
 %dir /var/lib/pcp/pmdas/systemtap
 %attr(755,root,root) /var/lib/pcp/pmdas/systemtap/Install
