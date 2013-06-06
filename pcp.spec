@@ -7,18 +7,24 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.7.1
+Version:	3.8.0
 Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	7131aa83ecd9ab3a409ffacd41a3b43a
+# Source0-md5:	e84224ad8ca40b7e207513180e717caf
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
+Patch2:		%{name}-nspr.patch
 URL:		http://oss.sgi.com/projects/pcp/
 BuildRequires:	autoconf >= 2.60
 BuildRequires:	bison
+BuildRequires:	cyrus-sasl-devel >= 2
 BuildRequires:	flex
+BuildRequires:	libmicrohttpd-devel >= 0.9.10
+BuildRequires:	nspr-devel >= 4
+BuildRequires:	nss-devel >= 3
+BuildRequires:	openssl-devel
 BuildRequires:	perl-ExtUtils-MakeMaker
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
@@ -28,6 +34,7 @@ BuildRequires:	rpm-perlprov
 BuildRequires:	rpm-pythonprov
 BuildRequires:	rpmbuild(macros) >= 1.219
 Requires:	%{name}-libs = %{version}-%{release}
+Requires:	libmicrohttpd >= 0.9.10
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -121,6 +128,7 @@ Bashowe uzupełnianie nazw dla narzędzi PCP.
 %setup -q
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 %build
 %{__autoconf}
@@ -173,6 +181,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) %{_bindir}/mrtg2pcp
 %attr(755,root,root) %{_bindir}/pcp
 %attr(755,root,root) %{_bindir}/pmafm
+%attr(755,root,root) %{_bindir}/pmatop
 %attr(755,root,root) %{_bindir}/pmclient
 %attr(755,root,root) %{_bindir}/pmcollectl
 %attr(755,root,root) %{_bindir}/pmconfig
@@ -225,6 +234,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) %{_libdir}/pcp/bin/pmproxy
 %attr(755,root,root) %{_libdir}/pcp/bin/pmsignal
 %attr(755,root,root) %{_libdir}/pcp/bin/pmsleep
+%attr(755,root,root) %{_libdir}/pcp/bin/pmwebd
 %attr(755,root,root) %{_libdir}/pcp/bin/pmwtf
 %attr(755,root,root) %{_libdir}/pcp/bin/telnet-probe
 %dir %{_datadir}/pcp
@@ -256,11 +266,14 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/crontab
 %dir %{_sysconfdir}/pcp/pmproxy
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmproxy/pmproxy.options
+%dir %{_sysconfdir}/pcp/pmwebd
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmwebd/pmwebd.options
 %attr(754,root,root) /etc/rc.d/init.d/pcp
 %attr(754,root,root) /etc/rc.d/init.d/pmcd
 %attr(754,root,root) /etc/rc.d/init.d/pmie
 %attr(754,root,root) /etc/rc.d/init.d/pmlogger
 %attr(754,root,root) /etc/rc.d/init.d/pmproxy
+%attr(754,root,root) /etc/rc.d/init.d/pmwebd
 %dir /var/lib/pcp/config
 %dir /var/lib/pcp/config/pmafm
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmafm/pcp
@@ -539,6 +552,11 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) /var/lib/pcp/pmdas/news/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/news/pmdanews.pl
 /var/lib/pcp/pmdas/news/active
+%dir /var/lib/pcp/pmdas/nginx
+%attr(755,root,root) /var/lib/pcp/pmdas/nginx/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/nginx/Remove
+%config(noreplace) %verify(not md5 mtime size) %attr(755,root,root) /var/lib/pcp/pmdas/nginx/nginx.conf
+%attr(755,root,root) /var/lib/pcp/pmdas/nginx/pmdanginx.pl
 %dir /var/lib/pcp/pmdas/pdns
 %attr(755,root,root) /var/lib/pcp/pmdas/pdns/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/pdns/Remove
@@ -730,6 +748,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/mrtg2pcp.1*
 %{_mandir}/man1/pcp.1*
 %{_mandir}/man1/pmafm.1*
+%{_mandir}/man1/pmatop.1*
 %{_mandir}/man1/pmcd.1*
 %{_mandir}/man1/pmcd_wait.1*
 %{_mandir}/man1/pmclient.1*
@@ -748,6 +767,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmdanamed.1*
 %{_mandir}/man1/pmdanetfilter.1*
 %{_mandir}/man1/pmdanews.1*
+%{_mandir}/man1/pmdanginx.1*
 %{_mandir}/man1/pmdapdns.1*
 %{_mandir}/man1/pmdapostfix.1*
 %{_mandir}/man1/pmdapostgresql.1*
@@ -805,6 +825,8 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmstore.1*
 %{_mandir}/man1/pmtrace.1*
 %{_mandir}/man1/pmval.1*
+%{_mandir}/man1/pmwebd.1*
+%{_mandir}/man1/pmwtf.1*
 %{_mandir}/man1/sar2pcp.1*
 %{_mandir}/man1/sheet2pcp.1*
 %{_mandir}/man1/telnet-probe.1*
@@ -845,11 +867,11 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmcpp.1*
 %{_mandir}/man1/pminfo.1*
 %{_mandir}/man1/pmnsmerge.1*
-%{_mandir}/man4/mmv.4*
-%{_mandir}/man4/pcp.conf.4*
-%{_mandir}/man4/pcp.env.4*
-%{_mandir}/man4/pmieconf.4*
-%{_mandir}/man4/pmns.4*
+%{_mandir}/man5/mmv.5*
+%{_mandir}/man5/pcp.conf.5*
+%{_mandir}/man5/pcp.env.5*
+%{_mandir}/man5/pmieconf.5*
+%{_mandir}/man5/pmns.5*
 
 %files devel
 %defattr(644,root,root,755)
@@ -864,6 +886,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man3/PCPIntro.3*
 %{_mandir}/man3/PMAPI.3*
 %{_mandir}/man3/PMDA.3*
+%{_mandir}/man3/PMWEBAPI.3*
 %{_mandir}/man3/__pm*.3*
 %{_mandir}/man3/mmv_*.3*
 %{_mandir}/man3/pm*.3*
@@ -903,10 +926,14 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 
 %files -n python-pcp
 %defattr(644,root,root,755)
-%attr(755,root,root) %{py_sitedir}/pmapi.so
-%{py_sitedir}/pcp.py[co]
-%{py_sitedir}/pcpi.py[co]
-%{py_sitedir}/pcp-0.2-py*.egg-info
+%attr(755,root,root) %{py_sitedir}/cmmv.so
+%attr(755,root,root) %{py_sitedir}/cpmapi.so
+%attr(755,root,root) %{py_sitedir}/cpmda.so
+%attr(755,root,root) %{py_sitedir}/cpmgui.so
+%attr(755,root,root) %{py_sitedir}/cpmi.so
+%dir %{py_sitedir}/pcp
+%{py_sitedir}/pcp/*.py[co]
+%{py_sitedir}/pcp-0.3-py*.egg-info
 
 %files -n bash-completion-pcp
 %defattr(644,root,root,755)

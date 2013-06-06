@@ -1,0 +1,11 @@
+--- pcp-3.8.0/configure.in.orig	2013-06-06 18:00:26.783021767 +0200
++++ pcp-3.8.0/configure.in	2013-06-06 18:09:36.373010312 +0200
+@@ -1979,7 +1979,7 @@
+     AC_SUBST(lib_for_nss)
+ 
+     AC_CHECK_LIB(nspr, PR_Init, [lib_for_nspr="-lnspr"], [
+-	AC_CHECK_LIB(nspr4, PR_Init, [lib_for_nspr="-lnspr4"], [
++	AC_CHECK_LIB(nspr4, PR_Init, [lib_for_nspr="-lnspr4 -lplc4"], [
+ 	    enable_secure=false
+ 	    if test "$do_secure" = "yes"
+ 	    then
