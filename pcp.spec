@@ -160,6 +160,8 @@ install -p src/pmns/stdpmid $RPM_BUILD_ROOT/var/lib/pcp/pmns
 %{__rm} -r $RPM_BUILD_ROOT%{_datadir}/pcp/{demos,examples}
 # tests
 %{__rm} -r $RPM_BUILD_ROOT/var/lib/pcp/testsuite
+# some files packaged as %doc, the rest useless in package
+%{__rm} -r $RPM_BUILD_ROOT%{_docdir}/%{name}-%{version}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -260,6 +262,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %dir %{_sysconfdir}/pcp/pmie/cisco
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/cisco/in_util
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/cisco/out_util
+%dir %{_sysconfdir}/pcp/pmlogger
 %{_sysconfdir}/pcp/pmlogger/Makefile
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/config.*
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/control
@@ -676,7 +679,6 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 /var/lib/pcp/pmdas/systemd/help
 /var/lib/pcp/pmdas/systemd/pmns
 /var/lib/pcp/pmdas/systemd/root
-/var/lib/pcp/pmdas/summary/expr.pmie
 %dir /var/lib/pcp/pmdas/systemtap
 %attr(755,root,root) /var/lib/pcp/pmdas/systemtap/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/systemtap/Remove
