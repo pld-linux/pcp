@@ -7,12 +7,12 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.8.0
-Release:	2
+Version:	3.8.1
+Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	e84224ad8ca40b7e207513180e717caf
+# Source0-md5:	f355945b64e4402b279b81bdf0078278
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
@@ -177,6 +177,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %files
 %defattr(644,root,root,755)
 %doc CHANGELOG README
+%attr(755,root,root) %{_bindir}/collectl2pcp
 %attr(755,root,root) %{_bindir}/dbpmda
 %attr(755,root,root) %{_bindir}/genpmda
 %attr(755,root,root) %{_bindir}/iostat2pcp
@@ -198,6 +199,8 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) %{_bindir}/pmieconf
 %attr(755,root,root) %{_bindir}/pmlc
 %attr(755,root,root) %{_bindir}/pmlogcheck
+%attr(755,root,root) %{_bindir}/pmlogextract
+%attr(755,root,root) %{_bindir}/pmlogger
 %attr(755,root,root) %{_bindir}/pmloglabel
 %attr(755,root,root) %{_bindir}/pmlogsummary
 %attr(755,root,root) %{_bindir}/pmprobe
@@ -646,7 +649,8 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %doc /var/lib/pcp/pmdas/simple/README
 %attr(755,root,root) /var/lib/pcp/pmdas/simple/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/simple/Remove
-%attr(755,root,root) /var/lib/pcp/pmdas/simple/pmdasimple.pl
+%attr(755,root,root) /var/lib/pcp/pmdas/simple/pmdasimple.perl
+%attr(755,root,root) /var/lib/pcp/pmdas/simple/pmdasimple.python
 /var/lib/pcp/pmdas/simple/domain.h
 /var/lib/pcp/pmdas/simple/help
 /var/lib/pcp/pmdas/simple/pmns
@@ -742,6 +746,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/PCPIntro.1*
 %{_mandir}/man1/autofsd-probe.1*
 %{_mandir}/man1/chkhelp.1*
+%{_mandir}/man1/collectl2pcp.1*
 %{_mandir}/man1/dbpmda.1*
 %{_mandir}/man1/dbprobe.1*
 %{_mandir}/man1/genpmda.1*
