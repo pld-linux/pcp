@@ -1,0 +1,22 @@
+--- pcp-3.8.2/man/man1/pmdagfs2.1.orig	2013-07-18 02:29:18.000000000 +0200
++++ pcp-3.8.2/man/man1/pmdagfs2.1	2013-08-25 21:49:14.945888103 +0200
+@@ -15,7 +15,7 @@
+ .\"
+ .TH PMDAGFS2 1 "PCP" "Performance Co-Pilot"
+ .SH NAME
+-\fBpmdagfs2\fR \- Global Filesystem v2 (GFS2) PMDA
++\f3pmdagfs2\f1 \- Global Filesystem v2 (GFS2) PMDA
+ .SH DESCRIPTION
+ .B pmdagfs2
+ is a Performance Metrics Domain Agent (PMDA) which exports 
+--- pcp-3.8.2/man/man1/pmdagluster.1.orig	2013-07-24 09:38:40.000000000 +0200
++++ pcp-3.8.2/man/man1/pmdagluster.1	2013-08-25 21:49:37.085887174 +0200
+@@ -15,7 +15,7 @@
+ .\"
+ .TH PMDAGLUSTER 1 "PCP" "Performance Co-Pilot"
+ .SH NAME
+-\fBpmdagluster\fR \- Gluster Filesystem PMDA
++\f3pmdagluster\f1 \- Gluster Filesystem PMDA
+ .SH DESCRIPTION
+ \fBpmdagluster\fR is a Performance Metrics Domain Agent (PMDA) which exports 
+ metric values about mounted gluster filesystems using the

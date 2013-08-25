@@ -7,15 +7,16 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.8.1
+Version:	3.8.2
 Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	f355945b64e4402b279b81bdf0078278
+# Source0-md5:	47d1c1a6976aa6bb9dc3f38dd5bde4d0
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
+Patch3:		%{name}-man.patch
 URL:		http://oss.sgi.com/projects/pcp/
 BuildRequires:	autoconf >= 2.60
 BuildRequires:	bison
@@ -129,6 +130,7 @@ Bashowe uzupełnianie nazw dla narzędzi PCP.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 %build
 %{__autoconf}
@@ -152,6 +154,12 @@ install -d $RPM_BUILD_ROOT%{_sysconfdir}
 	HAVE_XZED_MANPAGES=false
 
 install -p src/pmns/stdpmid $RPM_BUILD_ROOT/var/lib/pcp/pmns
+
+install -d $RPM_BUILD_ROOT%{systemdtmpfilesdir}
+# TODO: change to pcp user/group
+cat >$RPM_BUILD_ROOT%{systemdtmpfilesdir}/pcp.conf <<EOF
+d /var/run/pcp 0775 root root -
+EOF
 
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
 %py_postclean
@@ -251,6 +259,9 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_datadir}/pcp/lib/pmdaproc.sh
 %{_datadir}/pcp/lib/rc-proc.sh
 %{_datadir}/pcp/lib/rc-proc.sh.minimal
+%config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pmie
+%config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pmlogger
+%config(noreplace) %verify(not md5 mtime size) /etc/sasl2/pmcd.conf
 %{_sysconfdir}/pcp.sh
 %dir %{_sysconfdir}/pcp
 %dir %{_sysconfdir}/pcp/pmcd
@@ -258,18 +269,9 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmcd/pmcd.options
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmcd/rc.local
 %dir %{_sysconfdir}/pcp/pmie
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/config.default
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/control
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/crontab
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/stomp
-%dir %{_sysconfdir}/pcp/pmie/cisco
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/cisco/in_util
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/cisco/out_util
 %dir %{_sysconfdir}/pcp/pmlogger
-%{_sysconfdir}/pcp/pmlogger/Makefile
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/config.*
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/control
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/crontab
 %dir %{_sysconfdir}/pcp/pmproxy
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmproxy/pmproxy.options
 %dir %{_sysconfdir}/pcp/pmwebd
@@ -291,6 +293,9 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Web.*
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/shping.*
 %dir /var/lib/pcp/config/pmieconf
+%dir /var/lib/pcp/config/pmieconf/cisco
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/cisco/in_util
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/cisco/out_util
 %dir /var/lib/pcp/config/pmieconf/cpu
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/cpu/context_switch
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/cpu/load_average
@@ -372,6 +377,8 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/nfs2-server
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/nfs3-client
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/nfs3-server
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/nfs4-client
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/nfs4-server
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/other-protocols
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/rpc
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/socket-irix
@@ -407,6 +414,16 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/shping/summary
 %dir /var/lib/pcp/config/pmlogconf/sqlserver
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/sqlserver/summary
+%dir /var/lib/pcp/config/pmlogconf/tools
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/iostat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/ip
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/mpstat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pcp-summary
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmclient
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmclient-summary
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmieconf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmstat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/vmstat
 %dir /var/lib/pcp/config/pmlogconf/v1.0
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/v1.0/C2
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/v1.0/C3
@@ -419,6 +436,8 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %dir /var/lib/pcp/config/pmlogger
 %dir /var/lib/pcp/config/pmlogrewrite
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_migrate.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_net_snmp_migrate.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/mysql_migrate.conf
 %dir /var/lib/pcp/pmdas
 %dir /var/lib/pcp/pmdas/apache
 %doc /var/lib/pcp/pmdas/apache/README
@@ -579,15 +598,12 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) /var/lib/pcp/pmdas/postgresql/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/postgresql/pmdapostgresql.pl
 %dir /var/lib/pcp/pmdas/proc
-%attr(755,root,root) /var/lib/pcp/pmdas/proc/Install
-%attr(755,root,root) /var/lib/pcp/pmdas/proc/Remove
+/var/lib/pcp/pmdas/proc/help.dir
+/var/lib/pcp/pmdas/proc/help.pag
 %attr(755,root,root) /var/lib/pcp/pmdas/proc/pmdaproc
 %attr(755,root,root) /var/lib/pcp/pmdas/proc/pmda_proc.so
 /var/lib/pcp/pmdas/proc/domain.h
 /var/lib/pcp/pmdas/proc/help
-/var/lib/pcp/pmdas/proc/pmns
-/var/lib/pcp/pmdas/proc/pmns.cgroup
-/var/lib/pcp/pmdas/proc/root
 %dir /var/lib/pcp/pmdas/process
 %doc /var/lib/pcp/pmdas/process/README
 %attr(755,root,root) /var/lib/pcp/pmdas/process/Install
@@ -766,6 +782,8 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmdacisco.1*
 %{_mandir}/man1/pmdadbping.1*
 %{_mandir}/man1/pmdaelasticsearch.1*
+%{_mandir}/man1/pmdagfs2.1*
+%{_mandir}/man1/pmdagluster.1*
 %{_mandir}/man1/pmdagpsd.1*
 %{_mandir}/man1/pmdakvm.1*
 %{_mandir}/man1/pmdamailq.1*
@@ -867,9 +885,12 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 /var/lib/pcp/pmns/root_linux
 /var/lib/pcp/pmns/root_mmv
 /var/lib/pcp/pmns/root_pmcd
+/var/lib/pcp/pmns/root_proc
 /var/lib/pcp/pmns/stdpmid.pcp
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmns/stdpmid.local
 %ghost /var/lib/pcp/pmns/stdpmid
+%dir /var/run/pcp
+%{systemdtmpfilesdir}/pcp.conf
 %{_mandir}/man1/newhelp.1*
 %{_mandir}/man1/pmcpp.1*
 %{_mandir}/man1/pminfo.1*
