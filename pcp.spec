@@ -17,6 +17,7 @@ Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
 Patch3:		%{name}-man.patch
+Patch4:		%{name}-saslconfdir.patch
 URL:		http://oss.sgi.com/projects/pcp/
 BuildRequires:	autoconf >= 2.60
 BuildRequires:	bison
@@ -131,6 +132,7 @@ Bashowe uzupełnianie nazw dla narzędzi PCP.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 %build
 %{__autoconf}
@@ -261,7 +263,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_datadir}/pcp/lib/rc-proc.sh.minimal
 %config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pmie
 %config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pmlogger
-%config(noreplace) %verify(not md5 mtime size) /etc/sasl2/pmcd.conf
+%config(noreplace) %verify(not md5 mtime size) /etc/sasl/pmcd.conf
 %{_sysconfdir}/pcp.sh
 %dir %{_sysconfdir}/pcp
 %dir %{_sysconfdir}/pcp/pmcd

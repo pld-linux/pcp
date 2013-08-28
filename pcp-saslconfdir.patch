@@ -1,0 +1,11 @@
+--- pcp-3.8.2/configure.in~	2013-08-28 21:02:12.078864396 +0200
++++ pcp-3.8.2/configure.in	2013-08-28 21:04:27.163062319 +0200
+@@ -1687,7 +1687,7 @@
+ pcp_etc_dir=`eval echo $sysconfdir`
+ pcp_etc_dir=`eval echo $pcp_etc_dir`
+ AC_SUBST(pcp_etc_dir)
+-pcp_saslconf_dir=`eval echo $sysconfdir/sasl2`
++pcp_saslconf_dir=`eval echo $sysconfdir/sasl`
+ pcp_saslconf_dir=`eval echo $pcp_saslconf_dir`
+ AC_SUBST(pcp_saslconf_dir)
+ pcp_sysconf_dir=`eval echo $sysconfdir/pcp`
