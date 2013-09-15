@@ -7,22 +7,23 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.8.2
-Release:	2
+Version:	3.8.4
+Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	47d1c1a6976aa6bb9dc3f38dd5bde4d0
+# Source0-md5:	c7aad9eb224e30e61839941b9e3abf4d
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
-Patch3:		%{name}-man.patch
-Patch4:		%{name}-saslconfdir.patch
+Patch3:		%{name}-saslconfdir.patch
 URL:		http://oss.sgi.com/projects/pcp/
 BuildRequires:	autoconf >= 2.60
 BuildRequires:	bison
 BuildRequires:	cyrus-sasl-devel >= 2
 BuildRequires:	flex
+BuildRequires:	libibmad-devel
+BuildRequires:	libibumad-devel
 BuildRequires:	libmicrohttpd-devel >= 0.9.10
 BuildRequires:	nspr-devel >= 4
 BuildRequires:	nss-devel >= 3
@@ -30,11 +31,14 @@ BuildRequires:	openssl-devel
 BuildRequires:	perl-ExtUtils-MakeMaker
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
+BuildRequires:	pkgconfig
 BuildRequires:	python-devel
 BuildRequires:	readline-devel
 BuildRequires:	rpm-perlprov
 BuildRequires:	rpm-pythonprov
 BuildRequires:	rpmbuild(macros) >= 1.219
+BuildRequires:	systemd-devel
+BuildRequires:	systemtap-sdt-devel
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	libmicrohttpd >= 0.9.10
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -126,13 +130,25 @@ bash-completion for PCP utilities.
 %description -n bash-completion-pcp -l pl.UTF-8
 Bashowe uzupełnianie nazw dla narzędzi PCP.
 
+%package -n systemtap-pcp
+Summary:	systemtap/dtrace probes for PCP
+Summary(pl.UTF-8):	Sondy systemtap/dtrace dla PCP
+Group:		Development/Tools
+Requires:	%{name} = %{version}-%{release}
+Requires:	systemtap-client
+
+%description -n systemtap-pcp
+systemtap/dtrace probes for PCP.
+
+%description -n systemtap-pcp -l pl.UTF-8
+Sondy systemtap/dtrace dla PCP.
+
 %prep
 %setup -q
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-%patch4 -p1
 
 %build
 %{__autoconf}
@@ -417,6 +433,9 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %dir /var/lib/pcp/config/pmlogconf/sqlserver
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/sqlserver/summary
 %dir /var/lib/pcp/config/pmlogconf/tools
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/atop
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/atop-proc
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/collectl
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/iostat
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/ip
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/mpstat
@@ -425,6 +444,8 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmclient-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmieconf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmstat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/sar
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/sar-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/vmstat
 %dir /var/lib/pcp/config/pmlogconf/v1.0
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/v1.0/C2
@@ -439,6 +460,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %dir /var/lib/pcp/config/pmlogrewrite
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_migrate.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_net_snmp_migrate.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_xfs_migrate.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/mysql_migrate.conf
 %dir /var/lib/pcp/pmdas
 %dir /var/lib/pcp/pmdas/apache
@@ -490,6 +512,10 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 /var/lib/pcp/pmdas/gfs2/help
 /var/lib/pcp/pmdas/gfs2/pmns
 /var/lib/pcp/pmdas/gfs2/root
+%dir /var/lib/pcp/pmdas/gluster
+%attr(755,root,root) /var/lib/pcp/pmdas/gluster/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/gluster/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/gluster/pmdagluster.python
 %dir /var/lib/pcp/pmdas/gpsd
 %attr(755,root,root) /var/lib/pcp/pmdas/gpsd/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/gpsd/Remove
@@ -498,6 +524,15 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) /var/lib/pcp/pmdas/kvm/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/kvm/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/kvm/pmdakvm.pl
+/var/lib/pcp/pmdas/ib
+%dir /var/lib/pcp/pmdas/infiniband
+%attr(755,root,root) /var/lib/pcp/pmdas/infiniband/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/infiniband/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/infiniband/pmdaib
+/var/lib/pcp/pmdas/infiniband/domain.h
+/var/lib/pcp/pmdas/infiniband/help
+/var/lib/pcp/pmdas/infiniband/pmns
+/var/lib/pcp/pmdas/infiniband/root
 %dir /var/lib/pcp/pmdas/linux
 %attr(755,root,root) /var/lib/pcp/pmdas/linux/pmdalinux
 %attr(755,root,root) /var/lib/pcp/pmdas/linux/pmda_linux.so
@@ -756,6 +791,13 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 /var/lib/pcp/pmdas/weblog/help
 /var/lib/pcp/pmdas/weblog/pmns
 /var/lib/pcp/pmdas/weblog/root
+%dir /var/lib/pcp/pmdas/xfs
+%attr(755,root,root) /var/lib/pcp/pmdas/xfs/pmda_xfs.so
+%attr(755,root,root) /var/lib/pcp/pmdas/xfs/pmdaxfs
+/var/lib/pcp/pmdas/xfs/domain.h
+/var/lib/pcp/pmdas/xfs/help
+/var/lib/pcp/pmdas/xfs/help.dir
+/var/lib/pcp/pmdas/xfs/help.pag
 %dir /var/lib/pcp/pmdas/zimbra
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/Remove
@@ -787,6 +829,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmdagfs2.1*
 %{_mandir}/man1/pmdagluster.1*
 %{_mandir}/man1/pmdagpsd.1*
+%{_mandir}/man1/pmdaib.1*
 %{_mandir}/man1/pmdakvm.1*
 %{_mandir}/man1/pmdamailq.1*
 %{_mandir}/man1/pmdamemcache.1*
@@ -888,6 +931,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 /var/lib/pcp/pmns/root_mmv
 /var/lib/pcp/pmns/root_pmcd
 /var/lib/pcp/pmns/root_proc
+/var/lib/pcp/pmns/root_xfs
 /var/lib/pcp/pmns/stdpmid.pcp
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmns/stdpmid.local
 %ghost /var/lib/pcp/pmns/stdpmid
@@ -968,3 +1012,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %files -n bash-completion-pcp
 %defattr(644,root,root,755)
 /etc/bash_completion.d/pcp
+
+%files -n systemtap-pcp
+%defattr(644,root,root,755)
+%{_datadir}/systemtap/tapset/pmcd.stp
