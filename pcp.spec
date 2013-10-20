@@ -7,12 +7,12 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.8.4
+Version:	3.8.5
 Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	c7aad9eb224e30e61839941b9e3abf4d
+# Source0-md5:	950d4850e59e861f07f0a68de9914a74
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
@@ -277,8 +277,8 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_datadir}/pcp/lib/pmdaproc.sh
 %{_datadir}/pcp/lib/rc-proc.sh
 %{_datadir}/pcp/lib/rc-proc.sh.minimal
-%config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pmie
-%config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pmlogger
+%config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pcp-pmie
+%config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pcp-pmlogger
 %config(noreplace) %verify(not md5 mtime size) /etc/sasl/pmcd.conf
 %{_sysconfdir}/pcp.sh
 %dir %{_sysconfdir}/pcp
@@ -351,6 +351,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %dir /var/lib/pcp/config/pmlogconf/disk
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/disk/percontroller
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/disk/perdisk
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/disk/perpartition
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/disk/summary
 %dir /var/lib/pcp/config/pmlogconf/filesystem
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/filesystem/all
@@ -377,6 +378,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %dir /var/lib/pcp/config/pmlogconf/mailq
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/mailq/summary
 %dir /var/lib/pcp/config/pmlogconf/memory
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/proc-linux
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/swap-activity
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/swap-all
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/swap-config
@@ -635,22 +637,16 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) /var/lib/pcp/pmdas/postgresql/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/postgresql/pmdapostgresql.pl
 %dir /var/lib/pcp/pmdas/proc
+%attr(755,root,root) /var/lib/pcp/pmdas/proc/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/proc/Remove
 /var/lib/pcp/pmdas/proc/help.dir
 /var/lib/pcp/pmdas/proc/help.pag
 %attr(755,root,root) /var/lib/pcp/pmdas/proc/pmdaproc
 %attr(755,root,root) /var/lib/pcp/pmdas/proc/pmda_proc.so
 /var/lib/pcp/pmdas/proc/domain.h
 /var/lib/pcp/pmdas/proc/help
-%dir /var/lib/pcp/pmdas/process
-%doc /var/lib/pcp/pmdas/process/README
-%attr(755,root,root) /var/lib/pcp/pmdas/process/Install
-%attr(755,root,root) /var/lib/pcp/pmdas/process/Remove
-%attr(755,root,root) /var/lib/pcp/pmdas/process/pmdaprocess
-/var/lib/pcp/pmdas/process/domain.h
-/var/lib/pcp/pmdas/process/help
-/var/lib/pcp/pmdas/process/pmns
-/var/lib/pcp/pmdas/process/root
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/process/process.conf
+/var/lib/pcp/pmdas/proc/root
+/var/lib/pcp/pmdas/proc/root_proc
 %dir /var/lib/pcp/pmdas/roomtemp
 %doc /var/lib/pcp/pmdas/roomtemp/README
 %attr(755,root,root) /var/lib/pcp/pmdas/roomtemp/Install
@@ -792,12 +788,16 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 /var/lib/pcp/pmdas/weblog/pmns
 /var/lib/pcp/pmdas/weblog/root
 %dir /var/lib/pcp/pmdas/xfs
+%attr(755,root,root) /var/lib/pcp/pmdas/xfs/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/xfs/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/xfs/pmda_xfs.so
 %attr(755,root,root) /var/lib/pcp/pmdas/xfs/pmdaxfs
 /var/lib/pcp/pmdas/xfs/domain.h
 /var/lib/pcp/pmdas/xfs/help
 /var/lib/pcp/pmdas/xfs/help.dir
 /var/lib/pcp/pmdas/xfs/help.pag
+/var/lib/pcp/pmdas/xfs/root
+/var/lib/pcp/pmdas/xfs/root_xfs
 %dir /var/lib/pcp/pmdas/zimbra
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/Remove
