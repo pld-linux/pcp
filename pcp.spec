@@ -7,12 +7,12 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.8.5
+Version:	3.8.8
 Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	950d4850e59e861f07f0a68de9914a74
+# Source0-md5:	7776f655b18f5bd8b5c1e5f1e1b11c4a
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
@@ -522,6 +522,17 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) /var/lib/pcp/pmdas/gpsd/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/gpsd/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/gpsd/pmdagpsd.pl
+%dir /var/lib/pcp/pmdas/jbd2
+%attr(755,root,root) /var/lib/pcp/pmdas/jbd2/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/jbd2/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/jbd2/pmdajbd2
+%attr(755,root,root) /var/lib/pcp/pmdas/jbd2/pmda_jbd2.so
+/var/lib/pcp/pmdas/jbd2/domain.h
+/var/lib/pcp/pmdas/jbd2/help
+/var/lib/pcp/pmdas/jbd2/help.dir
+/var/lib/pcp/pmdas/jbd2/help.pag
+/var/lib/pcp/pmdas/jbd2/root
+/var/lib/pcp/pmdas/jbd2/root_jbd2
 %dir /var/lib/pcp/pmdas/kvm
 %attr(755,root,root) /var/lib/pcp/pmdas/kvm/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/kvm/Remove
@@ -927,6 +938,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) /var/lib/pcp/pmns/Make.stdpmid
 %attr(755,root,root) /var/lib/pcp/pmns/Rebuild
 /var/lib/pcp/pmns/Makefile
+/var/lib/pcp/pmns/root_jbd2
 /var/lib/pcp/pmns/root_linux
 /var/lib/pcp/pmns/root_mmv
 /var/lib/pcp/pmns/root_pmcd
