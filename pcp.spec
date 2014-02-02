@@ -7,12 +7,12 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.8.8
+Version:	3.8.12
 Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	7776f655b18f5bd8b5c1e5f1e1b11c4a
+# Source0-md5:	5ce47080480981ada09fd348cdb1b4ca
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
@@ -182,6 +182,8 @@ EOF
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
 %py_postclean
 
+# extraneous or specific to other OSs
+%{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/{kernel,pmdaaix,pmdadarwin,pmdafreebsd,pmdanetbsd,pmdasolaris,pmdawindows}.1
 # could be eventually packaged in examplesdir / docdir resp.
 %{__rm} -r $RPM_BUILD_ROOT%{_datadir}/pcp/{demos,examples}
 # tests
@@ -219,6 +221,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) %{_bindir}/pmdumplog
 %attr(755,root,root) %{_bindir}/pmerr
 %attr(755,root,root) %{_bindir}/pmevent
+%attr(755,root,root) %{_bindir}/pmfind
 %attr(755,root,root) %{_bindir}/pmgenmap
 %attr(755,root,root) %{_bindir}/pmie
 %attr(755,root,root) %{_bindir}/pmie2col
@@ -258,6 +261,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) %{_libdir}/pcp/bin/pmlogger_merge
 %attr(755,root,root) %{_libdir}/pcp/bin/pmlogreduce
 %attr(755,root,root) %{_libdir}/pcp/bin/pmlogrewrite
+%attr(755,root,root) %{_libdir}/pcp/bin/pmmgr
 %attr(755,root,root) %{_libdir}/pcp/bin/pmnewlog
 %attr(755,root,root) %{_libdir}/pcp/bin/pmnsadd
 %attr(755,root,root) %{_libdir}/pcp/bin/pmnsdel
@@ -290,6 +294,15 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/control
 %dir %{_sysconfdir}/pcp/pmlogger
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/control
+%dir %{_sysconfdir}/pcp/pmmgr
+%doc %{_sysconfdir}/pcp/pmmgr/README
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmie
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmieconf
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmlogconf
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmlogger
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmlogmerge
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmmgr.options
+%config(noreplace,missingok) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/target-discovery.example-avahi
 %dir %{_sysconfdir}/pcp/pmproxy
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmproxy/pmproxy.options
 %dir %{_sysconfdir}/pcp/pmwebd
@@ -298,6 +311,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(754,root,root) /etc/rc.d/init.d/pmcd
 %attr(754,root,root) /etc/rc.d/init.d/pmie
 %attr(754,root,root) /etc/rc.d/init.d/pmlogger
+%attr(754,root,root) /etc/rc.d/init.d/pmmgr
 %attr(754,root,root) /etc/rc.d/init.d/pmproxy
 %attr(754,root,root) /etc/rc.d/init.d/pmwebd
 %dir /var/lib/pcp/config
@@ -458,7 +472,6 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/v1.0/S1
 %dir /var/lib/pcp/config/pmlogconf/zimbra
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/zimbra/all
-%dir /var/lib/pcp/config/pmlogger
 %dir /var/lib/pcp/config/pmlogrewrite
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_migrate.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_net_snmp_migrate.conf
@@ -815,6 +828,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/pmdazimbra.pl
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/zimbraprobe
 %{_mandir}/man1/PCPIntro.1*
+%{_mandir}/man1/PMDAs.1*
 %{_mandir}/man1/autofsd-probe.1*
 %{_mandir}/man1/chkhelp.1*
 %{_mandir}/man1/collectl2pcp.1*
@@ -832,6 +846,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmclient.1*
 %{_mandir}/man1/pmcollectl.1*
 %{_mandir}/man1/pmconfig.1*
+%{_mandir}/man1/pmdaapache.1*
 %{_mandir}/man1/pmdabash.1*
 %{_mandir}/man1/pmdabonding.1*
 %{_mandir}/man1/pmdacisco.1*
@@ -841,9 +856,17 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmdagluster.1*
 %{_mandir}/man1/pmdagpsd.1*
 %{_mandir}/man1/pmdaib.1*
+%{_mandir}/man1/pmdajbd2.1*
+%{_mandir}/man1/pmdakernel.1*
 %{_mandir}/man1/pmdakvm.1*
+%{_mandir}/man1/pmdalinux.1*
+%{_mandir}/man1/pmdalmsensors.1*
+%{_mandir}/man1/pmdalogger.1*
+%{_mandir}/man1/pmdalustrecomm.1*
 %{_mandir}/man1/pmdamailq.1*
 %{_mandir}/man1/pmdamemcache.1*
+%{_mandir}/man1/pmdammv.1*
+%{_mandir}/man1/pmdamounts.1*
 %{_mandir}/man1/pmdamysql.1*
 %{_mandir}/man1/pmdanamed.1*
 %{_mandir}/man1/pmdanetfilter.1*
@@ -852,6 +875,8 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmdapdns.1*
 %{_mandir}/man1/pmdapostfix.1*
 %{_mandir}/man1/pmdapostgresql.1*
+%{_mandir}/man1/pmdaproc.1*
+%{_mandir}/man1/pmdaroomtemp.1*
 %{_mandir}/man1/pmdarsyslog.1*
 %{_mandir}/man1/pmdasamba.1*
 %{_mandir}/man1/pmdasample.1*
@@ -860,6 +885,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmdasimple.1*
 %{_mandir}/man1/pmdasnmp.1*
 %{_mandir}/man1/pmdasummary.1*
+%{_mandir}/man1/pmdasystemd.1*
 %{_mandir}/man1/pmdasystemtap.1*
 %{_mandir}/man1/pmdate.1*
 %{_mandir}/man1/pmdatrace.1*
@@ -867,11 +893,13 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmdatxmon.1*
 %{_mandir}/man1/pmdavmware.1*
 %{_mandir}/man1/pmdaweblog.1*
+%{_mandir}/man1/pmdaxfs.1*
 %{_mandir}/man1/pmdazimbra.1*
 %{_mandir}/man1/pmdbg.1*
 %{_mandir}/man1/pmdumplog.1*
 %{_mandir}/man1/pmerr.1*
 %{_mandir}/man1/pmevent.1*
+%{_mandir}/man1/pmfind.1*
 %{_mandir}/man1/pmgenmap.1*
 %{_mandir}/man1/pmhostname.1*
 %{_mandir}/man1/pmie.1*
@@ -893,6 +921,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pmlogreduce.1*
 %{_mandir}/man1/pmlogrewrite.1*
 %{_mandir}/man1/pmlogsummary.1*
+%{_mandir}/man1/pmmgr.1*
 %{_mandir}/man1/pmnewlog.1*
 %{_mandir}/man1/pmnsadd.1*
 %{_mandir}/man1/pmnsdel.1*
