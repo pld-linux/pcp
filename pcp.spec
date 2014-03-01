@@ -7,12 +7,12 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.8.12
+Version:	3.9.0
 Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	5ce47080480981ada09fd348cdb1b4ca
+# Source0-md5:	ff418ff346f4110fb056330ff8f266ce
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
@@ -182,8 +182,10 @@ EOF
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
 %py_postclean
 
-# extraneous or specific to other OSs
-%{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/{kernel,pmdaaix,pmdadarwin,pmdafreebsd,pmdanetbsd,pmdasolaris,pmdawindows}.1
+# kill man pages specific to other OSs (note: pmdaaix.1 is installed as actual man source)
+%{__mv} $RPM_BUILD_ROOT%{_mandir}/man1/{pmdaaix,pmdakernel}.1
+ln -snf pmdakernel.1 $RPM_BUILD_ROOT%{_mandir}/man1/pmdalinux.1
+%{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/{pmdadarwin,pmdafreebsd,pmdanetbsd,pmdasolaris,pmdawindows}.1
 # could be eventually packaged in examplesdir / docdir resp.
 %{__rm} -r $RPM_BUILD_ROOT%{_datadir}/pcp/{demos,examples}
 # tests
@@ -301,6 +303,8 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmlogconf
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmlogger
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmlogmerge
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmlogmerge-granular
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmlogmerge-rewrite
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmmgr.options
 %config(noreplace,missingok) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/target-discovery.example-avahi
 %dir %{_sysconfdir}/pcp/pmproxy
@@ -692,9 +696,12 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %doc /var/lib/pcp/pmdas/sample/README
 %attr(755,root,root) /var/lib/pcp/pmdas/sample/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/sample/Remove
-%attr(755,root,root) /var/lib/pcp/pmdas/sample/pmdasample
-%attr(755,root,root) /var/lib/pcp/pmdas/sample/pmda_sample.so
+/var/lib/pcp/pmdas/sample/Makefile
 /var/lib/pcp/pmdas/sample/domain.h
+/var/lib/pcp/pmdas/sample/events.[ch]
+/var/lib/pcp/pmdas/sample/percontext.[ch]
+/var/lib/pcp/pmdas/sample/pmda.c
+/var/lib/pcp/pmdas/sample/sample.c
 /var/lib/pcp/pmdas/sample/help
 /var/lib/pcp/pmdas/sample/pmns
 /var/lib/pcp/pmdas/sample/root
@@ -784,9 +791,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %doc /var/lib/pcp/pmdas/txmon/README
 %attr(755,root,root) /var/lib/pcp/pmdas/txmon/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/txmon/Remove
-%attr(755,root,root) /var/lib/pcp/pmdas/txmon/pmdatxmon
 %attr(755,root,root) /var/lib/pcp/pmdas/txmon/genload
-%attr(755,root,root) /var/lib/pcp/pmdas/txmon/txrecord
 /var/lib/pcp/pmdas/txmon/domain.h
 /var/lib/pcp/pmdas/txmon/help
 /var/lib/pcp/pmdas/txmon/pmns
@@ -828,7 +833,6 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/pmdazimbra.pl
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/zimbraprobe
 %{_mandir}/man1/PCPIntro.1*
-%{_mandir}/man1/PMDAs.1*
 %{_mandir}/man1/autofsd-probe.1*
 %{_mandir}/man1/chkhelp.1*
 %{_mandir}/man1/collectl2pcp.1*
@@ -983,6 +987,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %{_mandir}/man1/pminfo.1*
 %{_mandir}/man1/pmnsmerge.1*
 %{_mandir}/man5/mmv.5*
+%{_mandir}/man5/pcp-archive.5*
 %{_mandir}/man5/pcp.conf.5*
 %{_mandir}/man5/pcp.env.5*
 %{_mandir}/man5/pmieconf.5*
