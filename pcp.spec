@@ -1,7 +1,7 @@
 # TODO:
-# - pcp user/group, log dirs (see Debian packaging)
 # - PLDify init scripts
-# - /var/lib/pcp looks like mess, configs/variable data/scripts/ELFs (maybe consult Debian packaging?)
+# - /var/lib/pcp looks like mess, configs/variable data/scripts/ELFs (successively resolved upstream)
+# NOTE: user/group must be in -libs because of /var/run/pcp, needed for Make.stdpmid in post
 #
 %include	/usr/lib/rpm/macros.perl
 Summary:	Performance Co-Pilot - system level performance monitoring and management
@@ -63,6 +63,15 @@ klienckim łatwo odczytywać i przetwarzać dowolny podzbiór tych danych.
 Summary:	PCP libraries
 Summary(pl.UTF-8):	Biblioteki PCP
 Group:		Libraries
+Requires(post,postun):	/sbin/ldconfig
+Requires(pre):	/bin/id
+Requires(pre):	/usr/bin/getgid
+Requires(pre):	/usr/sbin/groupadd
+Requires(pre):	/usr/sbin/useradd
+Requires(postun):	/usr/sbin/groupdel
+Requires(postun):	/usr/sbin/userdel
+Provides:	group(pcp)
+Provides:	user(pcp)
 
 %description libs
 PCP libraries.
@@ -174,9 +183,8 @@ install -d $RPM_BUILD_ROOT%{_sysconfdir}
 install -p src/pmns/stdpmid $RPM_BUILD_ROOT/var/lib/pcp/pmns
 
 install -d $RPM_BUILD_ROOT%{systemdtmpfilesdir}
-# TODO: change to pcp user/group
 cat >$RPM_BUILD_ROOT%{systemdtmpfilesdir}/pcp.conf <<EOF
-d /var/run/pcp 0775 root root -
+d /var/run/pcp 0775 pcp pcp -
 EOF
 
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
@@ -188,7 +196,7 @@ ln -snf pmdakernel.1 $RPM_BUILD_ROOT%{_mandir}/man1/pmdalinux.1
 %{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/{pmdadarwin,pmdafreebsd,pmdanetbsd,pmdasolaris,pmdawindows}.1
 # could be eventually packaged in examplesdir / docdir resp.
 %{__rm} -r $RPM_BUILD_ROOT%{_datadir}/pcp/{demos,examples}
-# tests
+# tests (package in -testsuite using pcpqa:pcpqa UID/GID?)
 %{__rm} -r $RPM_BUILD_ROOT/var/lib/pcp/testsuite
 # some files packaged as %doc, the rest useless in package
 %{__rm} -r $RPM_BUILD_ROOT%{_docdir}/%{name}-%{version}
@@ -196,13 +204,22 @@ ln -snf pmdakernel.1 $RPM_BUILD_ROOT%{_mandir}/man1/pmdalinux.1
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+%pre libs
+%groupadd -g 308 pcp
+%useradd -u 308 -d /var/lib/pcp -g pcp -s /bin/false -c "Performance Co-Pilot user" pcp
+
 %post	libs
 /sbin/ldconfig
 cd /var/lib/pcp/pmns
 umask 022
 PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 
-%postun	libs -p /sbin/ldconfig
+%postun	libs
+/sbin/ldconfig
+if [ "$1" = "0" ]; then
+	%userremove pcp
+	%groupremove pcp
+fi
 
 %files
 %defattr(644,root,root,755)
@@ -292,10 +309,10 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmcd/pmcd.conf
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmcd/pmcd.options
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmcd/rc.local
-%dir %{_sysconfdir}/pcp/pmie
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/control
-%dir %{_sysconfdir}/pcp/pmlogger
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/control
+%attr(775,root,pcp) %dir %{_sysconfdir}/pcp/pmie
+%attr(664,pcp,pcp) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/control
+%attr(775,root,pcp) %dir %{_sysconfdir}/pcp/pmlogger
+%attr(664,pcp,pcp) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/control
 %dir %{_sysconfdir}/pcp/pmmgr
 %doc %{_sysconfdir}/pcp/pmmgr/README
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmie
@@ -328,6 +345,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Sample
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Web.*
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/shping.*
+%attr(775,pcp,pcp) %dir /var/lib/pcp/config/pmda
 %dir /var/lib/pcp/config/pmieconf
 %dir /var/lib/pcp/config/pmieconf/cisco
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/cisco/in_util
@@ -832,6 +850,16 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/pmdazimbra.pl
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/zimbraprobe
+%attr(775,pcp,pcp) %dir /var/lib/pcp/tmp
+%attr(775,pcp,pcp) %dir /var/lib/pcp/tmp/pmie
+%attr(775,pcp,pcp) %dir /var/lib/pcp/tmp/pmlogger
+%attr(775,pcp,pcp) %dir /var/log/pcp
+%attr(775,pcp,pcp) %dir /var/log/pcp/pmcd
+%attr(775,pcp,pcp) %dir /var/log/pcp/pmie
+%attr(775,pcp,pcp) %dir /var/log/pcp/pmlogger
+%attr(775,pcp,pcp) %dir /var/log/pcp/pmmgr
+%attr(775,pcp,pcp) %dir /var/log/pcp/pmproxy
+%attr(775,pcp,pcp) %dir /var/log/pcp/pmwebd
 %{_mandir}/man1/PCPIntro.1*
 %{_mandir}/man1/autofsd-probe.1*
 %{_mandir}/man1/chkhelp.1*
@@ -980,7 +1008,7 @@ PCP_DIR= PCP_TMP_DIR=/tmp ./Make.stdpmid
 /var/lib/pcp/pmns/stdpmid.pcp
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmns/stdpmid.local
 %ghost /var/lib/pcp/pmns/stdpmid
-%dir /var/run/pcp
+%attr(775,pcp,pcp) %dir /var/run/pcp
 %{systemdtmpfilesdir}/pcp.conf
 %{_mandir}/man1/newhelp.1*
 %{_mandir}/man1/pmcpp.1*
