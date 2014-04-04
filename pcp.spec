@@ -7,16 +7,17 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.9.0
+Version:	3.9.1
 Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	ff418ff346f4110fb056330ff8f266ce
+# Source0-md5:	940e7090d28732a2f8e7201761030f63
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
 Patch3:		%{name}-saslconfdir.patch
+Patch4:		%{name}-format.patch
 URL:		http://oss.sgi.com/projects/pcp/
 BuildRequires:	autoconf >= 2.60
 BuildRequires:	bison
@@ -158,6 +159,7 @@ Sondy systemtap/dtrace dla PCP.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 %build
 %{__autoconf}
@@ -662,6 +664,10 @@ fi
 %attr(755,root,root) /var/lib/pcp/pmdas/news/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/news/pmdanews.pl
 /var/lib/pcp/pmdas/news/active
+%dir /var/lib/pcp/pmdas/nfsclient
+%attr(755,root,root) /var/lib/pcp/pmdas/nfsclient/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/nfsclient/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/nfsclient/pmdanfsclient.pl
 %dir /var/lib/pcp/pmdas/nginx
 %attr(755,root,root) /var/lib/pcp/pmdas/nginx/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/nginx/Remove
@@ -850,6 +856,10 @@ fi
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/pmdazimbra.pl
 %attr(755,root,root) /var/lib/pcp/pmdas/zimbra/zimbraprobe
+%dir /var/lib/pcp/pmdas/zswap
+%attr(755,root,root) /var/lib/pcp/pmdas/zswap/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/zswap/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/zswap/pmdazswap.python
 %attr(775,pcp,pcp) %dir /var/lib/pcp/tmp
 %attr(775,pcp,pcp) %dir /var/lib/pcp/tmp/pmie
 %attr(775,pcp,pcp) %dir /var/lib/pcp/tmp/pmlogger
@@ -903,6 +913,7 @@ fi
 %{_mandir}/man1/pmdanamed.1*
 %{_mandir}/man1/pmdanetfilter.1*
 %{_mandir}/man1/pmdanews.1*
+%{_mandir}/man1/pmdanfsclient.1*
 %{_mandir}/man1/pmdanginx.1*
 %{_mandir}/man1/pmdapdns.1*
 %{_mandir}/man1/pmdapostfix.1*
@@ -926,6 +937,7 @@ fi
 %{_mandir}/man1/pmdavmware.1*
 %{_mandir}/man1/pmdaweblog.1*
 %{_mandir}/man1/pmdaxfs.1*
+%{_mandir}/man1/pmdazswap.1*
 %{_mandir}/man1/pmdazimbra.1*
 %{_mandir}/man1/pmdbg.1*
 %{_mandir}/man1/pmdumplog.1*
