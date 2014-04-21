@@ -7,17 +7,16 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.9.1
+Version:	3.9.2
 Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	940e7090d28732a2f8e7201761030f63
+# Source0-md5:	42b6a7fb8969eca1b91c9f980fe29192
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
 Patch3:		%{name}-saslconfdir.patch
-Patch4:		%{name}-format.patch
 URL:		http://oss.sgi.com/projects/pcp/
 BuildRequires:	autoconf >= 2.60
 BuildRequires:	bison
@@ -159,7 +158,6 @@ Sondy systemtap/dtrace dla PCP.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-%patch4 -p1
 
 %build
 %{__autoconf}
@@ -252,6 +250,7 @@ fi
 %attr(755,root,root) %{_bindir}/pmlogextract
 %attr(755,root,root) %{_bindir}/pmlogger
 %attr(755,root,root) %{_bindir}/pmloglabel
+%attr(755,root,root) %{_bindir}/pmlogmv
 %attr(755,root,root) %{_bindir}/pmlogsummary
 %attr(755,root,root) %{_bindir}/pmprobe
 %attr(755,root,root) %{_bindir}/pmsocks
@@ -265,6 +264,9 @@ fi
 %attr(755,root,root) %{_libdir}/pcp/bin/chkhelp
 %attr(755,root,root) %{_libdir}/pcp/bin/install-sh
 %attr(755,root,root) %{_libdir}/pcp/bin/mkaf
+%attr(755,root,root) %{_libdir}/pcp/bin/pcp-free
+%attr(755,root,root) %{_libdir}/pcp/bin/pcp-numastat
+%attr(755,root,root) %{_libdir}/pcp/bin/pcp-uptime
 %attr(755,root,root) %{_libdir}/pcp/bin/pmcd
 %attr(755,root,root) %{_libdir}/pcp/bin/pmcd_wait
 %attr(755,root,root) %{_libdir}/pcp/bin/pmhostname
@@ -475,10 +477,15 @@ fi
 %dir /var/lib/pcp/config/pmlogconf/tools
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/atop
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/atop-proc
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/atop-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/collectl
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/collectl-summary
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/free
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/free-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/iostat
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/ip
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/mpstat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/numastat
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pcp-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmclient
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmclient-summary
@@ -486,7 +493,9 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmstat
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/sar
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/sar-summary
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/uptime
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/vmstat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/vmstat-summary
 %dir /var/lib/pcp/config/pmlogconf/v1.0
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/v1.0/C2
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/v1.0/C3
@@ -881,6 +890,9 @@ fi
 %{_mandir}/man1/mkaf.1*
 %{_mandir}/man1/mrtg2pcp.1*
 %{_mandir}/man1/pcp.1*
+%{_mandir}/man1/pcp-free.1*
+%{_mandir}/man1/pcp-numastat.1*
+%{_mandir}/man1/pcp-uptime.1*
 %{_mandir}/man1/pmafm.1*
 %{_mandir}/man1/pmatop.1*
 %{_mandir}/man1/pmcd.1*
@@ -962,6 +974,7 @@ fi
 %{_mandir}/man1/pmlogger_daily.1*
 %{_mandir}/man1/pmlogger_merge.1*
 %{_mandir}/man1/pmloglabel.1*
+%{_mandir}/man1/pmlogmv.1*
 %{_mandir}/man1/pmlogreduce.1*
 %{_mandir}/man1/pmlogrewrite.1*
 %{_mandir}/man1/pmlogsummary.1*
