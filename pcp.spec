@@ -8,7 +8,7 @@ Summary:	Performance Co-Pilot - system level performance monitoring and manageme
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
 Version:	3.9.2
-Release:	1
+Release:	2
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
@@ -41,6 +41,7 @@ BuildRequires:	systemd-devel
 BuildRequires:	systemtap-sdt-devel
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	libmicrohttpd >= 0.9.10
+Suggests:	crondaemon
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %description
@@ -52,8 +53,8 @@ the interesting performance data in a system, and allows client
 applications to easily retrieve and process any subset of that data.
 
 %description -l pl.UTF-8
-PCP (Performance Co-Pilot) to szkielet i usługi mające na celu
-obsługę monitorowania wydajności i zarządzania wydajnością.
+PCP (Performance Co-Pilot) to szkielet i usługi mające na celu obsługę
+monitorowania wydajności i zarządzania wydajnością.
 
 PCP udostępnia ujednoliconą abstrakcję dla wszystkich interesujących
 danych związanych z wydajnością w systemie i pozwala aplikacjom
