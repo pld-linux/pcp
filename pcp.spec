@@ -3,25 +3,33 @@
 # - /var/lib/pcp looks like mess, configs/variable data/scripts/ELFs (successively resolved upstream)
 # NOTE: user/group must be in -libs because of /var/run/pcp, needed for Make.stdpmid in post
 #
+# Conditional build:
+%bcond_without	qt	# Qt 4.x based GUI
+#
 %include	/usr/lib/rpm/macros.perl
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.9.2
-Release:	2
+Version:	3.9.4
+Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	42b6a7fb8969eca1b91c9f980fe29192
+# Source0-md5:	cd9b3ba20035d8ac603e97cdb9d67268
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
 Patch3:		%{name}-saslconfdir.patch
+Patch4:		%{name}-rpm.patch
 URL:		http://oss.sgi.com/projects/pcp/
 BuildRequires:	autoconf >= 2.60
+BuildRequires:	avahi-devel
 BuildRequires:	bison
 BuildRequires:	cyrus-sasl-devel >= 2
 BuildRequires:	flex
+%ifarch i386
+BuildRequires:	libatomic-devel
+%endif
 BuildRequires:	libibmad-devel
 BuildRequires:	libibumad-devel
 BuildRequires:	libmicrohttpd-devel >= 0.9.10
@@ -34,11 +42,19 @@ BuildRequires:	perl-tools-pod
 BuildRequires:	pkgconfig
 BuildRequires:	python-devel
 BuildRequires:	readline-devel
+BuildRequires:	rpm-devel >= 5
 BuildRequires:	rpm-perlprov
 BuildRequires:	rpm-pythonprov
 BuildRequires:	rpmbuild(macros) >= 1.219
 BuildRequires:	systemd-devel
 BuildRequires:	systemtap-sdt-devel
+%if %{with qt}
+BuildRequires:	QtAssistant-compat-devel >= 4.4
+BuildRequires:	QtCore-devel >= 4.4
+BuildRequires:	QtGui-devel >= 4.4
+BuildRequires:	qt4-build >= 4.4
+BuildRequires:	qt4-qmake >= 4.4
+%endif
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	libmicrohttpd >= 0.9.10
 Suggests:	crondaemon
@@ -59,6 +75,31 @@ monitorowania wydajności i zarządzania wydajnością.
 PCP udostępnia ujednoliconą abstrakcję dla wszystkich interesujących
 danych związanych z wydajnością w systemie i pozwala aplikacjom
 klienckim łatwo odczytywać i przetwarzać dowolny podzbiór tych danych.
+
+%package gui
+Summary:	Performance Co-Pilot GUI tools
+Summary(pl.UTF-8):	Performance Co-Pilot - narzędzia GUI
+Group:		X11/Applications
+Requires:	%{name} = %{version}-%{release}
+
+%description gui
+pmchart is designed to produce stripcharts from Performance Co-Pilot
+(PCP) performance metrics fetched from live sources (one or more pmcd
+hosts) and also historical sources (one or more PCP archives).
+
+pmtime is a graphical time controller utility that coordinates time
+updates and VCR-like playback for other utilities like pmchart and
+pmval.
+
+%description gui -l pl.UTF-8
+pmchart służy do tworzenia wykresów z danych o wydajności pakietu PCP
+(Performance Co-Pilot) pobranych z żywych źródeł (jednego lub większej
+liczby hostów pmcd) oraz źródeł historycznych (jednego lub większej
+liczby archiwów PCP).
+
+pmtime to graficzne narzędzie do kontroli czasu, koordynujące
+aktualizację czasu oraz odtwarzanie w stylu VCR dla innych narzędzi,
+takich jak pmchart czy pmval.
 
 %package libs
 Summary:	PCP libraries
@@ -159,10 +200,12 @@ Sondy systemtap/dtrace dla PCP.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 %build
 %{__autoconf}
 %configure \
+	%{!?with_qt:--without qt} \
 	--with-rcdir=/etc/rc.d/init.d
 # ensure not *zipping man pages on install
 %{__sed} -i -e '/^HAVE_.*ED_MANPAGES/s,true,false,' src/include/builddefs
@@ -201,6 +244,8 @@ ln -snf pmdakernel.1 $RPM_BUILD_ROOT%{_mandir}/man1/pmdalinux.1
 %{__rm} -r $RPM_BUILD_ROOT/var/lib/pcp/testsuite
 # some files packaged as %doc, the rest useless in package
 %{__rm} -r $RPM_BUILD_ROOT%{_docdir}/%{name}-%{version}
+# packaged as %doc
+%{__mv} $RPM_BUILD_ROOT%{_docdir}/pcp-doc/html html
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -270,6 +315,7 @@ fi
 %attr(755,root,root) %{_libdir}/pcp/bin/pcp-uptime
 %attr(755,root,root) %{_libdir}/pcp/bin/pmcd
 %attr(755,root,root) %{_libdir}/pcp/bin/pmcd_wait
+%attr(755,root,root) %{_libdir}/pcp/bin/pmgetopt
 %attr(755,root,root) %{_libdir}/pcp/bin/pmhostname
 %attr(755,root,root) %{_libdir}/pcp/bin/pmie_check
 %attr(755,root,root) %{_libdir}/pcp/bin/pmie_daily
@@ -511,6 +557,7 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_net_snmp_migrate.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_xfs_migrate.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/mysql_migrate.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/rpm_migrate.conf
 %dir /var/lib/pcp/pmdas
 %dir /var/lib/pcp/pmdas/apache
 %doc /var/lib/pcp/pmdas/apache/README
@@ -718,6 +765,15 @@ fi
 /var/lib/pcp/pmdas/roomtemp/help
 /var/lib/pcp/pmdas/roomtemp/pmns
 /var/lib/pcp/pmdas/roomtemp/root
+%dir /var/lib/pcp/pmdas/rpm
+%attr(755,root,root) /var/lib/pcp/pmdas/rpm/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/rpm/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/rpm/pmda_rpm.so
+%attr(755,root,root) /var/lib/pcp/pmdas/rpm/pmdarpm
+/var/lib/pcp/pmdas/rpm/domain.h
+/var/lib/pcp/pmdas/rpm/help
+/var/lib/pcp/pmdas/rpm/pmns
+/var/lib/pcp/pmdas/rpm/root
 %dir /var/lib/pcp/pmdas/rsyslog
 %attr(755,root,root) /var/lib/pcp/pmdas/rsyslog/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/rsyslog/Remove
@@ -791,8 +847,6 @@ fi
 %doc /var/lib/pcp/pmdas/systemd/README
 %attr(755,root,root) /var/lib/pcp/pmdas/systemd/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/systemd/Remove
-%attr(755,root,root) /var/lib/pcp/pmdas/systemd/pmdasystemd
-%attr(755,root,root) /var/lib/pcp/pmdas/systemd/pmda_systemd.so
 /var/lib/pcp/pmdas/systemd/domain.h
 /var/lib/pcp/pmdas/systemd/help
 /var/lib/pcp/pmdas/systemd/pmns
@@ -933,6 +987,7 @@ fi
 %{_mandir}/man1/pmdapostgresql.1*
 %{_mandir}/man1/pmdaproc.1*
 %{_mandir}/man1/pmdaroomtemp.1*
+%{_mandir}/man1/pmdarpm.1*
 %{_mandir}/man1/pmdarsyslog.1*
 %{_mandir}/man1/pmdasamba.1*
 %{_mandir}/man1/pmdasample.1*
@@ -999,6 +1054,54 @@ fi
 %{_mandir}/man1/sheet2pcp.1*
 %{_mandir}/man1/telnet-probe.1*
 
+%if %{with qt}
+%files gui
+%defattr(644,root,root,755)
+%doc html
+%attr(755,root,root) %{_bindir}/pmchart
+%attr(755,root,root) %{_bindir}/pmconfirm
+%attr(755,root,root) %{_bindir}/pmdumptext
+%attr(755,root,root) %{_bindir}/pmmessage
+%attr(755,root,root) %{_bindir}/pmquery
+%attr(755,root,root) %{_bindir}/pmtime
+%attr(755,root,root) %{_libdir}/pcp/bin/pmsnap
+%dir %{_sysconfdir}/pcp/pmsnap
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmsnap/control
+%{_datadir}/pcp-gui
+%{_desktopdir}/pmchart.desktop
+%{_mandir}/man1/pmchart.1*
+%{_mandir}/man1/pmconfirm.1*
+%{_mandir}/man1/pmdumptext.1*
+%{_mandir}/man1/pmmessage.1*
+%{_mandir}/man1/pmquery.1*
+%{_mandir}/man1/pmsnap.1*
+%{_mandir}/man1/pmtime.1*
+/var/lib/pcp/config/pmafm/pcp-gui
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/CPU
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/ApacheServer
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Disk
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Diskbytes
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/ElasticsearchServer
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Filesystem
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Loadavg
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Memory
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/NFS2
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/NFS3
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Netbytes
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Netpackets
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Overview
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/PMCD
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Paging
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Schemes
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Sockets
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Swap
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Syscalls
+%dir /var/lib/pcp/config/pmsnap
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmsnap/Snap
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmsnap/crontab
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmsnap/summary.html
+%endif
+
 %files libs
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/pminfo
@@ -1061,6 +1164,8 @@ fi
 %{_mandir}/man3/PMAPI.3*
 %{_mandir}/man3/PMDA.3*
 %{_mandir}/man3/PMWEBAPI.3*
+%{_mandir}/man3/QMC.3*
+%{_mandir}/man3/Qmc*.3*
 %{_mandir}/man3/__pm*.3*
 %{_mandir}/man3/mmv_*.3*
 %{_mandir}/man3/pm*.3*
