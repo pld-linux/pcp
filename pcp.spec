@@ -10,12 +10,12 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.9.4
+Version:	3.9.6
 Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	cd9b3ba20035d8ac603e97cdb9d67268
+# Source0-md5:	cb8b4d280d9238555b0e1eae894e54f8
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
@@ -280,7 +280,6 @@ fi
 %attr(755,root,root) %{_bindir}/pmatop
 %attr(755,root,root) %{_bindir}/pmclient
 %attr(755,root,root) %{_bindir}/pmcollectl
-%attr(755,root,root) %{_bindir}/pmconfig
 %attr(755,root,root) %{_bindir}/pmdate
 %attr(755,root,root) %{_bindir}/pmdbg
 %attr(755,root,root) %{_bindir}/pmdumplog
@@ -315,6 +314,7 @@ fi
 %attr(755,root,root) %{_libdir}/pcp/bin/pcp-uptime
 %attr(755,root,root) %{_libdir}/pcp/bin/pmcd
 %attr(755,root,root) %{_libdir}/pcp/bin/pmcd_wait
+%attr(755,root,root) %{_libdir}/pcp/bin/pmconfig
 %attr(755,root,root) %{_libdir}/pcp/bin/pmgetopt
 %attr(755,root,root) %{_libdir}/pcp/bin/pmhostname
 %attr(755,root,root) %{_libdir}/pcp/bin/pmie_check
@@ -847,6 +847,7 @@ fi
 %doc /var/lib/pcp/pmdas/systemd/README
 %attr(755,root,root) /var/lib/pcp/pmdas/systemd/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/systemd/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/systemd/pmdasystemd
 /var/lib/pcp/pmdas/systemd/domain.h
 /var/lib/pcp/pmdas/systemd/help
 /var/lib/pcp/pmdas/systemd/pmns
@@ -1096,6 +1097,7 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Sockets
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Swap
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Syscalls
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/vCPU
 %dir /var/lib/pcp/config/pmsnap
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmsnap/Snap
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmsnap/crontab

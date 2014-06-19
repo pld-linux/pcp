@@ -1,5 +1,5 @@
---- pcp-3.9.4/configure.in.orig	2014-05-28 22:05:42.575179206 +0200
-+++ pcp-3.9.4/configure.in	2014-05-30 20:21:36.818374363 +0200
+--- pcp-3.9.6/configure.ac.orig	2014-05-28 22:05:42.575179206 +0200
++++ pcp-3.9.6/configure.ac	2014-05-30 20:21:36.818374363 +0200
 @@ -2369,8 +2369,8 @@
  savedLIBS=$LIBS
  AC_MSG_CHECKING([for rpmlib > 4.4.2])

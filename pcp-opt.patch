@@ -1,5 +1,5 @@
---- pcp-3.8.4/configure.in.orig	2013-09-15 16:11:00.907263278 +0200
-+++ pcp-3.8.4/configure.in	2013-09-15 16:12:28.537259600 +0200
+--- pcp-3.9.6/configure.ac.orig	2013-09-15 16:11:00.907263278 +0200
++++ pcp-3.9.6/configure.ac	2013-09-15 16:12:28.537259600 +0200
 @@ -127,7 +127,7 @@
      test -f /etc/slackware-version && target_distro=slackware
      test -f /etc/gentoo-release && target_distro=gentoo
