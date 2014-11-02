@@ -1,5 +1,6 @@
 # TODO:
 # - PLDify init scripts
+# - build pmview (BR: openinventor?)
 # - /var/lib/pcp looks like mess, configs/variable data/scripts/ELFs (successively resolved upstream)
 # NOTE: user/group must be in -libs because of /var/run/pcp, needed for Make.stdpmid in post
 #
@@ -10,12 +11,12 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.9.6
-Release:	2
+Version:	3.10.0
+Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	cb8b4d280d9238555b0e1eae894e54f8
+# Source0-md5:	483b20d7245fc0a3ef895a965f2b59c2
 Patch0:		%{name}-ps.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
@@ -40,7 +41,8 @@ BuildRequires:	perl-ExtUtils-MakeMaker
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
 BuildRequires:	pkgconfig
-BuildRequires:	python-devel
+BuildRequires:	python-devel >= 2.0
+BuildRequires:	python3-devel >= 1:3.2
 BuildRequires:	readline-devel
 BuildRequires:	rpm-devel >= 5
 BuildRequires:	rpm-perlprov
@@ -57,6 +59,8 @@ BuildRequires:	qt4-qmake >= 4.4
 %endif
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	libmicrohttpd >= 0.9.10
+Requires:	perl-pcp = %{version}-%{release}
+Requires:	python-pcp = %{version}-%{release}
 Suggests:	crondaemon
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -158,16 +162,28 @@ Perl interface to PCP libraries.
 Perlowy interfejs do bibliotek PCP.
 
 %package -n python-pcp
-Summary:	Python interface to PCP libraries
-Summary(pl.UTF-8):	Pythonowy interfejs do bibliotek PCP
+Summary:	Python 2 interface to PCP libraries
+Summary(pl.UTF-8):	Interfejs Pythona 2 do bibliotek PCP
 Group:		Development/Languages/Python
 Requires:	%{name}-libs = %{version}-%{release}
 
 %description -n python-pcp
-Python interface to PCP libraries.
+Python 2 interface to PCP libraries.
 
 %description -n python-pcp -l pl.UTF-8
-Pythonowy interfejs do bibliotek PCP.
+Interfejs Pythona 2 do bibliotek PCP.
+
+%package -n python3-pcp
+Summary:	Python 3 interface to PCP libraries
+Summary(pl.UTF-8):	Interfejs Pythona 3 do bibliotek PCP
+Group:		Development/Languages/Python
+Requires:	%{name}-libs = %{version}-%{release}
+
+%description -n python3-pcp
+Python 3 interface to PCP libraries.
+
+%description -n python3-pcp -l pl.UTF-8
+Interfejs Pythona 3 do bibliotek PCP.
 
 %package -n bash-completion-pcp
 Summary:	bash-completion for PCP utilities
@@ -226,6 +242,10 @@ install -d $RPM_BUILD_ROOT%{_sysconfdir}
 
 install -p src/pmns/stdpmid $RPM_BUILD_ROOT/var/lib/pcp/pmns
 
+# omitted by make install
+[ ! -f $RPM_BUILD_ROOT%{_mandir}/man1/pmdarpm.1 ] || exit 1
+cp -p src/pmdas/rpm/pmdarpm.1 $RPM_BUILD_ROOT%{_mandir}/man1
+
 install -d $RPM_BUILD_ROOT%{systemdtmpfilesdir}
 cat >$RPM_BUILD_ROOT%{systemdtmpfilesdir}/pcp.conf <<EOF
 d /var/run/pcp 0775 pcp pcp -
@@ -282,6 +302,7 @@ fi
 %attr(755,root,root) %{_bindir}/pmcollectl
 %attr(755,root,root) %{_bindir}/pmdate
 %attr(755,root,root) %{_bindir}/pmdbg
+%attr(755,root,root) %{_bindir}/pmdiff
 %attr(755,root,root) %{_bindir}/pmdumplog
 %attr(755,root,root) %{_bindir}/pmerr
 %attr(755,root,root) %{_bindir}/pmevent
@@ -290,6 +311,7 @@ fi
 %attr(755,root,root) %{_bindir}/pmie
 %attr(755,root,root) %{_bindir}/pmie2col
 %attr(755,root,root) %{_bindir}/pmieconf
+%attr(755,root,root) %{_bindir}/pmiostat
 %attr(755,root,root) %{_bindir}/pmlc
 %attr(755,root,root) %{_bindir}/pmlogcheck
 %attr(755,root,root) %{_bindir}/pmlogextract
@@ -309,6 +331,7 @@ fi
 %attr(755,root,root) %{_libdir}/pcp/bin/chkhelp
 %attr(755,root,root) %{_libdir}/pcp/bin/install-sh
 %attr(755,root,root) %{_libdir}/pcp/bin/mkaf
+%attr(755,root,root) %{_libdir}/pcp/bin/pcp-dmcache
 %attr(755,root,root) %{_libdir}/pcp/bin/pcp-free
 %attr(755,root,root) %{_libdir}/pcp/bin/pcp-numastat
 %attr(755,root,root) %{_libdir}/pcp/bin/pcp-uptime
@@ -386,12 +409,19 @@ fi
 %attr(754,root,root) /etc/rc.d/init.d/pmmgr
 %attr(754,root,root) /etc/rc.d/init.d/pmproxy
 %attr(754,root,root) /etc/rc.d/init.d/pmwebd
+%{systemdunitdir}/pmcd.service
+%{systemdunitdir}/pmie.service
+%{systemdunitdir}/pmlogger.service
+%{systemdunitdir}/pmmgr.service
+%{systemdunitdir}/pmproxy.service
+%{systemdunitdir}/pmwebd.service
 %dir /var/lib/pcp/config
 %dir /var/lib/pcp/config/pmafm
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmafm/pcp
 %dir /var/lib/pcp/config/pmchart
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Apache
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Cisco
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/MemAvailable
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Sendmail
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Sample
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Web.*
@@ -527,6 +557,7 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/atop-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/collectl
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/collectl-summary
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/dmcache
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/free
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/free-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/iostat
@@ -552,6 +583,8 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/v1.0/S1
 %dir /var/lib/pcp/config/pmlogconf/zimbra
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/zimbra/all
+%dir /var/lib/pcp/config/pmlogger
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogger/config.pmstat
 %dir /var/lib/pcp/config/pmlogrewrite
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_migrate.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_net_snmp_migrate.conf
@@ -596,6 +629,18 @@ fi
 %attr(755,root,root) /var/lib/pcp/pmdas/dbping/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/dbping/dbprobe.pl
 %attr(755,root,root) /var/lib/pcp/pmdas/dbping/pmdadbping.pl
+%dir /var/lib/pcp/pmdas/dmcache
+%attr(755,root,root) /var/lib/pcp/pmdas/dmcache/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/dmcache/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/dmcache/pmdadmcache.python
+%dir /var/lib/pcp/pmdas/ds389
+%attr(755,root,root) /var/lib/pcp/pmdas/ds389/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/ds389/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/ds389/pmdads389.pl
+%dir /var/lib/pcp/pmdas/ds389log
+%attr(755,root,root) /var/lib/pcp/pmdas/ds389log/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/ds389log/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/ds389log/pmdads389log.pl
 %dir /var/lib/pcp/pmdas/elasticsearch
 %attr(755,root,root) /var/lib/pcp/pmdas/elasticsearch/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/elasticsearch/Remove
@@ -704,6 +749,7 @@ fi
 /var/lib/pcp/pmdas/mounts/root
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/mounts/mounts.conf
 %dir /var/lib/pcp/pmdas/mysql
+%attr(755,root,root) /var/lib/pcp/pmdas/mysql/README
 %attr(755,root,root) /var/lib/pcp/pmdas/mysql/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/mysql/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/mysql/pmdamysql.pl
@@ -730,6 +776,16 @@ fi
 %attr(755,root,root) /var/lib/pcp/pmdas/nginx/Remove
 %config(noreplace) %verify(not md5 mtime size) %attr(755,root,root) /var/lib/pcp/pmdas/nginx/nginx.conf
 %attr(755,root,root) /var/lib/pcp/pmdas/nginx/pmdanginx.pl
+%dir /var/lib/pcp/pmdas/nvidia
+%attr(755,root,root) /var/lib/pcp/pmdas/nvidia/README
+%attr(755,root,root) /var/lib/pcp/pmdas/nvidia/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/nvidia/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/nvidia/pmda_nvidia.so
+%attr(755,root,root) /var/lib/pcp/pmdas/nvidia/pmdanvidia
+/var/lib/pcp/pmdas/nvidia/domain.h
+/var/lib/pcp/pmdas/nvidia/help
+/var/lib/pcp/pmdas/nvidia/pmns
+/var/lib/pcp/pmdas/nvidia/root
 %dir /var/lib/pcp/pmdas/pdns
 %attr(755,root,root) /var/lib/pcp/pmdas/pdns/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/pdns/Remove
@@ -946,6 +1002,7 @@ fi
 %{_mandir}/man1/mkaf.1*
 %{_mandir}/man1/mrtg2pcp.1*
 %{_mandir}/man1/pcp.1*
+%{_mandir}/man1/pcp-dmcache.1*
 %{_mandir}/man1/pcp-free.1*
 %{_mandir}/man1/pcp-numastat.1*
 %{_mandir}/man1/pcp-uptime.1*
@@ -961,6 +1018,9 @@ fi
 %{_mandir}/man1/pmdabonding.1*
 %{_mandir}/man1/pmdacisco.1*
 %{_mandir}/man1/pmdadbping.1*
+%{_mandir}/man1/pmdadmcache.1*
+%{_mandir}/man1/pmdads389.1*
+%{_mandir}/man1/pmdads389log.1*
 %{_mandir}/man1/pmdaelasticsearch.1*
 %{_mandir}/man1/pmdagfs2.1*
 %{_mandir}/man1/pmdagluster.1*
@@ -983,6 +1043,7 @@ fi
 %{_mandir}/man1/pmdanews.1*
 %{_mandir}/man1/pmdanfsclient.1*
 %{_mandir}/man1/pmdanginx.1*
+%{_mandir}/man1/pmdanvidia.1*
 %{_mandir}/man1/pmdapdns.1*
 %{_mandir}/man1/pmdapostfix.1*
 %{_mandir}/man1/pmdapostgresql.1*
@@ -1009,11 +1070,13 @@ fi
 %{_mandir}/man1/pmdazswap.1*
 %{_mandir}/man1/pmdazimbra.1*
 %{_mandir}/man1/pmdbg.1*
+%{_mandir}/man1/pmdiff.1*
 %{_mandir}/man1/pmdumplog.1*
 %{_mandir}/man1/pmerr.1*
 %{_mandir}/man1/pmevent.1*
 %{_mandir}/man1/pmfind.1*
 %{_mandir}/man1/pmgenmap.1*
+%{_mandir}/man1/pmgetopt.1*
 %{_mandir}/man1/pmhostname.1*
 %{_mandir}/man1/pmie.1*
 %{_mandir}/man1/pmie2col.1*
@@ -1021,6 +1084,7 @@ fi
 %{_mandir}/man1/pmie_daily.1*
 %{_mandir}/man1/pmieconf.1*
 %{_mandir}/man1/pmiestatus.1*
+%{_mandir}/man1/pmiostat.1*
 %{_mandir}/man1/pmlc.1*
 %{_mandir}/man1/pmlock.1*
 %{_mandir}/man1/pmlogcheck.1*
@@ -1050,7 +1114,6 @@ fi
 %{_mandir}/man1/pmtrace.1*
 %{_mandir}/man1/pmval.1*
 %{_mandir}/man1/pmwebd.1*
-%{_mandir}/man1/pmwtf.1*
 %{_mandir}/man1/sar2pcp.1*
 %{_mandir}/man1/sheet2pcp.1*
 %{_mandir}/man1/telnet-probe.1*
@@ -1102,6 +1165,9 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmsnap/Snap
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmsnap/crontab
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmsnap/summary.html
+# pmview (enable when built, maybe subpackage?)
+#%{_mandir}/man1/pmview.1*
+#%{_mandir}/man5/pmview.5*
 %endif
 
 %files libs
@@ -1214,7 +1280,19 @@ fi
 %attr(755,root,root) %{py_sitedir}/cpmi.so
 %dir %{py_sitedir}/pcp
 %{py_sitedir}/pcp/*.py[co]
-%{py_sitedir}/pcp-0.3-py*.egg-info
+%{py_sitedir}/pcp-1.0-py*.egg-info
+
+%files -n python3-pcp
+%defattr(644,root,root,755)
+%attr(755,root,root) %{py3_sitedir}/cmmv.cpython-*.so
+%attr(755,root,root) %{py3_sitedir}/cpmapi.cpython-*.so
+%attr(755,root,root) %{py3_sitedir}/cpmda.cpython-*.so
+%attr(755,root,root) %{py3_sitedir}/cpmgui.cpython-*.so
+%attr(755,root,root) %{py3_sitedir}/cpmi.cpython-*.so
+%dir %{py3_sitedir}/pcp
+%{py3_sitedir}/pcp/*.py
+%{py3_sitedir}/pcp/__pycache__
+%{py3_sitedir}/pcp-1.0-py*.egg-info
 
 %files -n bash-completion-pcp
 %defattr(644,root,root,755)
