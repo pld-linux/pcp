@@ -5,7 +5,8 @@
 # NOTE: user/group must be in -libs because of /var/run/pcp, needed for Make.stdpmid in post
 #
 # Conditional build:
-%bcond_without	qt	# Qt 4.x based GUI
+%bcond_without	qt		# Qt 4.x based GUI
+%bcond_without	systemtap	# systemtap/dtrace support
 #
 %include	/usr/lib/rpm/macros.perl
 Summary:	Performance Co-Pilot - system level performance monitoring and management
@@ -49,7 +50,7 @@ BuildRequires:	rpm-perlprov
 BuildRequires:	rpm-pythonprov
 BuildRequires:	rpmbuild(macros) >= 1.219
 BuildRequires:	systemd-devel
-BuildRequires:	systemtap-sdt-devel
+%{?with_systemtap:BuildRequires:	systemtap-sdt-devel}
 %if %{with qt}
 BuildRequires:	QtAssistant-compat-devel >= 4.4
 BuildRequires:	QtCore-devel >= 4.4
@@ -221,7 +222,7 @@ Sondy systemtap/dtrace dla PCP.
 %build
 %{__autoconf}
 %configure \
-	%{!?with_qt:--without qt} \
+	%{!?with_qt:--without-qt} \
 	--with-rcdir=/etc/rc.d/init.d
 # ensure not *zipping man pages on install
 %{__sed} -i -e '/^HAVE_.*ED_MANPAGES/s,true,false,' src/include/builddefs
@@ -908,11 +909,13 @@ fi
 /var/lib/pcp/pmdas/systemd/help
 /var/lib/pcp/pmdas/systemd/pmns
 /var/lib/pcp/pmdas/systemd/root
+%if %{with systemtap}
 %dir /var/lib/pcp/pmdas/systemtap
 %attr(755,root,root) /var/lib/pcp/pmdas/systemtap/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/systemtap/Remove
 %attr(755,root,root) %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/systemtap/pmdasystemtap.pl
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/systemtap/probes.stp
+%endif
 %dir /var/lib/pcp/pmdas/trace
 %doc /var/lib/pcp/pmdas/trace/README
 %attr(755,root,root) /var/lib/pcp/pmdas/trace/Install
@@ -1059,7 +1062,9 @@ fi
 %{_mandir}/man1/pmdasnmp.1*
 %{_mandir}/man1/pmdasummary.1*
 %{_mandir}/man1/pmdasystemd.1*
+%if %{with systemtap}
 %{_mandir}/man1/pmdasystemtap.1*
+%endif
 %{_mandir}/man1/pmdate.1*
 %{_mandir}/man1/pmdatrace.1*
 %{_mandir}/man1/pmdatrivial.1*
@@ -1298,6 +1303,8 @@ fi
 %defattr(644,root,root,755)
 /etc/bash_completion.d/pcp
 
+%if %{with systemtap}
 %files -n systemtap-pcp
 %defattr(644,root,root,755)
 %{_datadir}/systemtap/tapset/pmcd.stp
+%endif
