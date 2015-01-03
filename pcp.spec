@@ -422,7 +422,7 @@ fi
 %dir /var/lib/pcp/config/pmchart
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Apache
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Cisco
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/MemAvailable
+#%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/MemAvailable
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Sendmail
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Sample
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Web.*
