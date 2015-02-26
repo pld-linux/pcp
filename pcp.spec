@@ -13,7 +13,7 @@ Summary:	Performance Co-Pilot - system level performance monitoring and manageme
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
 Version:	3.10.0
-Release:	2
+Release:	3
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
@@ -55,6 +55,7 @@ BuildRequires:	systemd-devel
 BuildRequires:	QtAssistant-compat-devel >= 4.4
 BuildRequires:	QtCore-devel >= 4.4
 BuildRequires:	QtGui-devel >= 4.4
+BuildRequires:	QtSvg-devel >= 4.4
 BuildRequires:	qt4-build >= 4.4
 BuildRequires:	qt4-qmake >= 4.4
 %endif
