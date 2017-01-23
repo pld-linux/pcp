@@ -7,13 +7,13 @@
 # Conditional build:
 %bcond_without	qt		# Qt 4.x based GUI
 %bcond_without	systemtap	# systemtap/dtrace support
-#
+
 %include	/usr/lib/rpm/macros.perl
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
 Version:	3.10.0
-Release:	11
+Release:	12
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
@@ -193,6 +193,9 @@ Summary:	bash-completion for PCP utilities
 Summary(pl.UTF-8):	Bashowe uzupełnianie nazw dla narzędzi PCP
 Group:		Applications/Shells
 Requires:	bash-completion
+%if "%{_rpmversion}" >= "5"
+BuildArch:	noarch
+%endif
 
 %description -n bash-completion-pcp
 bash-completion for PCP utilities.
