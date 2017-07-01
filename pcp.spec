@@ -13,7 +13,7 @@ Summary:	Performance Co-Pilot - system level performance monitoring and manageme
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
 Version:	3.10.0
-Release:	14
+Release:	15
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
@@ -24,6 +24,7 @@ Patch2:		%{name}-nspr.patch
 Patch3:		%{name}-saslconfdir.patch
 Patch4:		%{name}-rpm.patch
 Patch5:		python-install.patch
+Patch6:		systemd.patch
 URL:		http://oss.sgi.com/projects/pcp/
 BuildRequires:	autoconf >= 2.60
 BuildRequires:	avahi-devel
@@ -224,6 +225,7 @@ Sondy systemtap/dtrace dla PCP.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 
 %build
 %{__autoconf}

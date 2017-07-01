@@ -1,0 +1,11 @@
+--- pcp-3.10.0/configure.ac~	2017-07-01 10:57:29.000000000 +0200
++++ pcp-3.10.0/configure.ac	2017-07-01 11:11:40.955209598 +0200
+@@ -1216,7 +1216,7 @@
+ fi
+ AC_SUBST(lib_for_regex)
+ 
+-PKG_CHECK_MODULES([SYSTEMD], [libsystemd-journal],
++PKG_CHECK_MODULES([SYSTEMD], [libsystemd],
+                   [pmda_systemd=true], [pmda_systemd=false])
+ AC_SUBST(PMDA_SYSTEMD, $pmda_systemd)
+ 
