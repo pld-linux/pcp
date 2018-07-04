@@ -1,13 +1,13 @@
---- pcp-3.10.0/src/include/builddefs.in~	2014-10-28 01:29:54.000000000 +0100
-+++ pcp-3.10.0/src/include/builddefs.in	2015-12-31 13:27:42.495614262 +0100
-@@ -555,13 +555,10 @@
+--- pcp-4.1.0/src/include/builddefs.in~	2018-06-15 03:48:02.000000000 +0200
++++ pcp-4.1.0/src/include/builddefs.in	2018-07-04 17:51:41.172261146 +0200
+@@ -693,13 +693,7 @@ SETUP_PY_BUILD_OPTIONS = --include-dirs=
  SETUP_PY_BUILD_OPTIONS += --library-dirs=$(TOPDIR)/src/libpcp/src:$(TOPDIR)/src/libpcp_pmda/src:$(TOPDIR)/src/libpcp_gui/src:$(TOPDIR)/src/libpcp_import/src:$(TOPDIR)/src/libpcp_mmv/src
  SETUP_PY_INSTALL_OPTIONS = --skip-build
- SETUP_PY_INSTALL_OPTIONS += --root=$${DIST_ROOT-/}
+ SETUP_PY_INSTALL_OPTIONS += --root="$${DIST_ROOT-/}"
 -ifeq "$(PYTHON_PREFIX)" "/usr"
- ifeq "$(PACKAGE_DISTRIBUTION)" "debian"
- SETUP_PY_INSTALL_OPTIONS += --install-layout=deb
- endif
+-ifeq "$(PACKAGE_DISTRIBUTION)" "debian"
+-SETUP_PY_INSTALL_OPTIONS += --install-layout=deb
+-endif
 -else
  SETUP_PY_INSTALL_OPTIONS += --prefix=$(PYTHON_PREFIX)
 -endif

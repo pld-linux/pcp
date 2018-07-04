@@ -12,20 +12,19 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	3.10.0
-Release:	16
+Version:	4.1.0
+Release:	0.1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
-Source0:	ftp://oss.sgi.com/projects/pcp/download/%{name}-%{version}.src.tar.gz
-# Source0-md5:	483b20d7245fc0a3ef895a965f2b59c2
-Patch0:		%{name}-ps.patch
+Source0:	https://github.com/performancecopilot/pcp/archive/%{version}.tar.gz
+# Source0-md5:	12e82f2464452e74d0104caf964df994
+
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
 Patch3:		%{name}-saslconfdir.patch
 Patch4:		%{name}-rpm.patch
 Patch5:		python-install.patch
-Patch6:		systemd.patch
-URL:		http://oss.sgi.com/projects/pcp/
+URL:		http://pcp.io/
 BuildRequires:	autoconf >= 2.60
 BuildRequires:	avahi-devel
 BuildRequires:	bison
@@ -219,18 +218,18 @@ Sondy systemtap/dtrace dla PCP.
 
 %prep
 %setup -q
-%patch0 -p1
+
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
-%patch6 -p1
 
 %build
+QTDIR=%{_libdir}/qt5; export QTDIR
 %{__autoconf}
 %configure \
-	%{!?with_qt:--without-qt} \
+	--with%{!?with_qt:out}-qt \
 	--with-python_prefix=%{_prefix} \
 	--with-rcdir=/etc/rc.d/init.d
 # ensure not *zipping man pages on install
@@ -244,6 +243,7 @@ install -d $RPM_BUILD_ROOT%{_sysconfdir}
 
 %{__make} install \
 	DIST_ROOT=$RPM_BUILD_ROOT \
+	BASHDIR=/etc/bash_completion.d/pcp \
 	INSTALL='$(INSTALL_SH)' \
 	HAVE_BZIP2ED_MANPAGES=false \
 	HAVE_GZIPPED_MANPAGES=false \
@@ -275,6 +275,7 @@ ln -snf pmdakernel.1 $RPM_BUILD_ROOT%{_mandir}/man1/pmdalinux.1
 # some files packaged as %doc, the rest useless in package
 %{__rm} -r $RPM_BUILD_ROOT%{_docdir}/%{name}-%{version}
 # packaged as %doc
+%{__rm} -rf html
 %{__mv} $RPM_BUILD_ROOT%{_docdir}/pcp-doc/html html
 
 %clean
@@ -299,7 +300,7 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc CHANGELOG README
+%doc CHANGELOG README.md
 %attr(755,root,root) %{_bindir}/collectl2pcp
 %attr(755,root,root) %{_bindir}/dbpmda
 %attr(755,root,root) %{_bindir}/genpmda
@@ -307,7 +308,6 @@ fi
 %attr(755,root,root) %{_bindir}/mrtg2pcp
 %attr(755,root,root) %{_bindir}/pcp
 %attr(755,root,root) %{_bindir}/pmafm
-%attr(755,root,root) %{_bindir}/pmatop
 %attr(755,root,root) %{_bindir}/pmclient
 %attr(755,root,root) %{_bindir}/pmcollectl
 %attr(755,root,root) %{_bindir}/pmdate
@@ -337,44 +337,43 @@ fi
 %attr(755,root,root) %{_bindir}/pmval
 %attr(755,root,root) %{_bindir}/sar2pcp
 %attr(755,root,root) %{_bindir}/sheet2pcp
-%attr(755,root,root) %{_libdir}/pcp/bin/autofsd-probe
-%attr(755,root,root) %{_libdir}/pcp/bin/chkhelp
-%attr(755,root,root) %{_libdir}/pcp/bin/install-sh
-%attr(755,root,root) %{_libdir}/pcp/bin/mkaf
-%attr(755,root,root) %{_libdir}/pcp/bin/pcp-dmcache
-%attr(755,root,root) %{_libdir}/pcp/bin/pcp-free
-%attr(755,root,root) %{_libdir}/pcp/bin/pcp-numastat
-%attr(755,root,root) %{_libdir}/pcp/bin/pcp-uptime
-%attr(755,root,root) %{_libdir}/pcp/bin/pmcd
-%attr(755,root,root) %{_libdir}/pcp/bin/pmcd_wait
-%attr(755,root,root) %{_libdir}/pcp/bin/pmconfig
-%attr(755,root,root) %{_libdir}/pcp/bin/pmgetopt
-%attr(755,root,root) %{_libdir}/pcp/bin/pmhostname
-%attr(755,root,root) %{_libdir}/pcp/bin/pmie_check
-%attr(755,root,root) %{_libdir}/pcp/bin/pmie_daily
-%attr(755,root,root) %{_libdir}/pcp/bin/pmie_email
-%attr(755,root,root) %{_libdir}/pcp/bin/pmiestatus
-%attr(755,root,root) %{_libdir}/pcp/bin/pmlock
-%attr(755,root,root) %{_libdir}/pcp/bin/pmlogconf
-%attr(755,root,root) %{_libdir}/pcp/bin/pmlogconf-setup
-%attr(755,root,root) %{_libdir}/pcp/bin/pmlogextract
-%attr(755,root,root) %{_libdir}/pcp/bin/pmlogger
-%attr(755,root,root) %{_libdir}/pcp/bin/pmlogger_check
-%attr(755,root,root) %{_libdir}/pcp/bin/pmlogger_daily
-%attr(755,root,root) %{_libdir}/pcp/bin/pmlogger_merge
-%attr(755,root,root) %{_libdir}/pcp/bin/pmlogreduce
-%attr(755,root,root) %{_libdir}/pcp/bin/pmlogrewrite
-%attr(755,root,root) %{_libdir}/pcp/bin/pmmgr
-%attr(755,root,root) %{_libdir}/pcp/bin/pmnewlog
-%attr(755,root,root) %{_libdir}/pcp/bin/pmnsadd
-%attr(755,root,root) %{_libdir}/pcp/bin/pmnsdel
-%attr(755,root,root) %{_libdir}/pcp/bin/pmpost
-%attr(755,root,root) %{_libdir}/pcp/bin/pmproxy
-%attr(755,root,root) %{_libdir}/pcp/bin/pmsignal
-%attr(755,root,root) %{_libdir}/pcp/bin/pmsleep
-%attr(755,root,root) %{_libdir}/pcp/bin/pmwebd
-%attr(755,root,root) %{_libdir}/pcp/bin/pmwtf
-%attr(755,root,root) %{_libdir}/pcp/bin/telnet-probe
+%attr(755,root,root) %{_libexecdir}/pcp/bin/chkhelp
+%attr(755,root,root) %{_libexecdir}/pcp/bin/install-sh
+%attr(755,root,root) %{_libexecdir}/pcp/bin/mkaf
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-dmcache
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-free
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-numastat
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-uptime
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmcd
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmcd_wait
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmconfig
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmgetopt
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmhostname
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmie_check
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmie_daily
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmie_email
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmiestatus
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmlock
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogconf
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogconf-setup
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogextract
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogger
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogger_check
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogger_daily
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogger_merge
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogreduce
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogrewrite
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmmgr
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmnewlog
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmnsadd
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmnsdel
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmpost
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmproxy
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmsignal
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmsleep
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmwebd
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmwtf
+%attr(755,root,root) %{_libexecdir}/pcp/bin/telnet-probe
 %dir %{_datadir}/pcp
 %dir %{_datadir}/pcp/lib
 %attr(755,root,root) %{_datadir}/pcp/lib/ReplacePmnsSubtree
@@ -387,7 +386,6 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pcp-pmie
 %config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pcp-pmlogger
 %config(noreplace) %verify(not md5 mtime size) /etc/sasl/pmcd.conf
-%{_sysconfdir}/pcp.sh
 %dir %{_sysconfdir}/pcp
 %dir %{_sysconfdir}/pcp/pmcd
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmcd/pmcd.conf
@@ -484,7 +482,6 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/filesystem/all
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/filesystem/summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/filesystem/xfs-all
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/filesystem/xfs-io-irix
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/filesystem/xfs-io-linux
 %dir /var/lib/pcp/config/pmlogconf/kernel
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/kernel/bufcache-activity
@@ -639,10 +636,6 @@ fi
 %attr(755,root,root) /var/lib/pcp/pmdas/dbping/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/dbping/dbprobe.pl
 %attr(755,root,root) /var/lib/pcp/pmdas/dbping/pmdadbping.pl
-%dir /var/lib/pcp/pmdas/dmcache
-%attr(755,root,root) /var/lib/pcp/pmdas/dmcache/Install
-%attr(755,root,root) /var/lib/pcp/pmdas/dmcache/Remove
-%attr(755,root,root) /var/lib/pcp/pmdas/dmcache/pmdadmcache.python
 %dir /var/lib/pcp/pmdas/ds389
 %attr(755,root,root) /var/lib/pcp/pmdas/ds389/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/ds389/Remove
@@ -780,7 +773,6 @@ fi
 %dir /var/lib/pcp/pmdas/nfsclient
 %attr(755,root,root) /var/lib/pcp/pmdas/nfsclient/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/nfsclient/Remove
-%attr(755,root,root) /var/lib/pcp/pmdas/nfsclient/pmdanfsclient.pl
 %dir /var/lib/pcp/pmdas/nginx
 %attr(755,root,root) /var/lib/pcp/pmdas/nginx/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/nginx/Remove
@@ -803,10 +795,6 @@ fi
 %dir /var/lib/pcp/pmdas/pmcd
 %attr(755,root,root) /var/lib/pcp/pmdas/pmcd/pmda_pmcd.so
 /var/lib/pcp/pmdas/pmcd/help.*
-%dir /var/lib/pcp/pmdas/postfix
-%attr(755,root,root) /var/lib/pcp/pmdas/postfix/Install
-%attr(755,root,root) /var/lib/pcp/pmdas/postfix/Remove
-%attr(755,root,root) /var/lib/pcp/pmdas/postfix/pmdapostfix.pl
 %dir /var/lib/pcp/pmdas/postgresql
 %attr(755,root,root) /var/lib/pcp/pmdas/postgresql/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/postgresql/Remove
@@ -1004,7 +992,6 @@ fi
 %attr(775,pcp,pcp) %dir /var/log/pcp/pmproxy
 %attr(775,pcp,pcp) %dir /var/log/pcp/pmwebd
 %{_mandir}/man1/PCPIntro.1*
-%{_mandir}/man1/autofsd-probe.1*
 %{_mandir}/man1/chkhelp.1*
 %{_mandir}/man1/collectl2pcp.1*
 %{_mandir}/man1/dbpmda.1*
@@ -1019,7 +1006,6 @@ fi
 %{_mandir}/man1/pcp-numastat.1*
 %{_mandir}/man1/pcp-uptime.1*
 %{_mandir}/man1/pmafm.1*
-%{_mandir}/man1/pmatop.1*
 %{_mandir}/man1/pmcd.1*
 %{_mandir}/man1/pmcd_wait.1*
 %{_mandir}/man1/pmclient.1*
@@ -1030,7 +1016,6 @@ fi
 %{_mandir}/man1/pmdabonding.1*
 %{_mandir}/man1/pmdacisco.1*
 %{_mandir}/man1/pmdadbping.1*
-%{_mandir}/man1/pmdadmcache.1*
 %{_mandir}/man1/pmdads389.1*
 %{_mandir}/man1/pmdads389log.1*
 %{_mandir}/man1/pmdaelasticsearch.1*
@@ -1142,7 +1127,7 @@ fi
 %attr(755,root,root) %{_bindir}/pmmessage
 %attr(755,root,root) %{_bindir}/pmquery
 %attr(755,root,root) %{_bindir}/pmtime
-%attr(755,root,root) %{_libdir}/pcp/bin/pmsnap
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmsnap
 %dir %{_sysconfdir}/pcp/pmsnap
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmsnap/control
 %{_datadir}/pcp-gui
@@ -1188,22 +1173,19 @@ fi
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/pminfo
 # NOTE: some of them are compatibility symlinks; regular files are SONAMEs directly
-%attr(755,root,root) %{_libdir}/libpcp.so.2
 %attr(755,root,root) %{_libdir}/libpcp.so.3
-%attr(755,root,root) %{_libdir}/libpcp_gui.so.1
 %attr(755,root,root) %{_libdir}/libpcp_gui.so.2
 %attr(755,root,root) %{_libdir}/libpcp_import.so.1
 %attr(755,root,root) %{_libdir}/libpcp_mmv.so.1
-%attr(755,root,root) %{_libdir}/libpcp_pmda.so.2
 %attr(755,root,root) %{_libdir}/libpcp_pmda.so.3
 %attr(755,root,root) %{_libdir}/libpcp_trace.so.2
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp.conf
 %{_sysconfdir}/pcp.env
-%dir %{_libdir}/pcp
-%dir %{_libdir}/pcp/bin
-%attr(755,root,root) %{_libdir}/pcp/bin/newhelp
-%attr(755,root,root) %{_libdir}/pcp/bin/pmcpp
-%attr(755,root,root) %{_libdir}/pcp/bin/pmnsmerge
+%dir %{_libexecdir}/pcp
+%dir %{_libexecdir}/pcp/bin
+%attr(755,root,root) %{_libexecdir}/pcp/bin/newhelp
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmcpp
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmnsmerge
 %dir /var/lib/pcp
 %dir /var/lib/pcp/pmns
 %config(missingok) /var/lib/pcp/pmns/.NeedRebuild
@@ -1226,7 +1208,6 @@ fi
 %{_mandir}/man1/pminfo.1*
 %{_mandir}/man1/pmnsmerge.1*
 %{_mandir}/man5/mmv.5*
-%{_mandir}/man5/pcp-archive.5*
 %{_mandir}/man5/pcp.conf.5*
 %{_mandir}/man5/pcp.env.5*
 %{_mandir}/man5/pmieconf.5*
@@ -1294,7 +1275,7 @@ fi
 %attr(755,root,root) %{py_sitedir}/cpmi.so
 %dir %{py_sitedir}/pcp
 %{py_sitedir}/pcp/*.py[co]
-%{py_sitedir}/pcp-1.0-py*.egg-info
+%{py_sitedir}/pcp-*-py*.egg-info
 
 %files -n python3-pcp
 %defattr(644,root,root,755)
@@ -1306,7 +1287,7 @@ fi
 %dir %{py3_sitedir}/pcp
 %{py3_sitedir}/pcp/*.py
 %{py3_sitedir}/pcp/__pycache__
-%{py3_sitedir}/pcp-1.0-py*.egg-info
+%{py3_sitedir}/pcp-*-py*.egg-info
 
 %files -n bash-completion-pcp
 %defattr(644,root,root,755)
