@@ -39,6 +39,7 @@ BuildRequires:	libmicrohttpd-devel >= 0.9.10
 BuildRequires:	nspr-devel >= 4
 BuildRequires:	nss-devel >= 3
 BuildRequires:	openssl-devel
+BuildRequires:	perl-DBD-Pg
 BuildRequires:	perl-ExtUtils-MakeMaker
 BuildRequires:	perl-base
 BuildRequires:	perl-tools-pod
@@ -230,6 +231,7 @@ QTDIR=%{_libdir}/qt5; export QTDIR
 %{__autoconf}
 %configure \
 	--with%{!?with_qt:out}-qt \
+	--with%{!?with_systemtap:out}-static-probes \
 	--with-python_prefix=%{_prefix} \
 	--with-rcdir=/etc/rc.d/init.d
 # ensure not *zipping man pages on install
@@ -303,12 +305,19 @@ fi
 %doc CHANGELOG README.md
 %attr(755,root,root) %{_bindir}/collectl2pcp
 %attr(755,root,root) %{_bindir}/dbpmda
+%attr(755,root,root) %{_bindir}/ganglia2pcp
 %attr(755,root,root) %{_bindir}/genpmda
 %attr(755,root,root) %{_bindir}/iostat2pcp
 %attr(755,root,root) %{_bindir}/mrtg2pcp
 %attr(755,root,root) %{_bindir}/pcp
+%attr(755,root,root) %{_bindir}/pcp2csv
+%attr(755,root,root) %{_bindir}/pcp2graphite
+%attr(755,root,root) %{_bindir}/pcp2influxdb
+%attr(755,root,root) %{_bindir}/pcp2json
+%attr(755,root,root) %{_bindir}/pcp2xml
 %attr(755,root,root) %{_bindir}/pmafm
 %attr(755,root,root) %{_bindir}/pmclient
+%attr(755,root,root) %{_bindir}/pmclient_fg
 %attr(755,root,root) %{_bindir}/pmcollectl
 %attr(755,root,root) %{_bindir}/pmdate
 %attr(755,root,root) %{_bindir}/pmdbg
@@ -322,14 +331,19 @@ fi
 %attr(755,root,root) %{_bindir}/pmie2col
 %attr(755,root,root) %{_bindir}/pmieconf
 %attr(755,root,root) %{_bindir}/pmiostat
+%attr(755,root,root) %{_bindir}/pmjson
 %attr(755,root,root) %{_bindir}/pmlc
 %attr(755,root,root) %{_bindir}/pmlogcheck
+%attr(755,root,root) %{_bindir}/pmlogconf
 %attr(755,root,root) %{_bindir}/pmlogextract
 %attr(755,root,root) %{_bindir}/pmlogger
 %attr(755,root,root) %{_bindir}/pmloglabel
 %attr(755,root,root) %{_bindir}/pmlogmv
+%attr(755,root,root) %{_bindir}/pmlogsize
 %attr(755,root,root) %{_bindir}/pmlogsummary
 %attr(755,root,root) %{_bindir}/pmprobe
+%attr(755,root,root) %{_bindir}/pmpython
+%attr(755,root,root) %{_bindir}/pmrep
 %attr(755,root,root) %{_bindir}/pmsocks
 %attr(755,root,root) %{_bindir}/pmstat
 %attr(755,root,root) %{_bindir}/pmstore
@@ -338,12 +352,28 @@ fi
 %attr(755,root,root) %{_bindir}/sar2pcp
 %attr(755,root,root) %{_bindir}/sheet2pcp
 %attr(755,root,root) %{_libexecdir}/pcp/bin/chkhelp
+%attr(755,root,root) %{_libexecdir}/pcp/bin/discover/pcp-kube-pods
 %attr(755,root,root) %{_libexecdir}/pcp/bin/install-sh
 %attr(755,root,root) %{_libexecdir}/pcp/bin/mkaf
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-atop
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-atopsar
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-collectl
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-dmcache
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-dstat
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-free
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-iostat
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-ipcs
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-lvmcache
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-mpstat
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-numastat
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-pidstat
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-python
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-shping
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-summary
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-tapestat
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-uptime
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-verify
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-vmstat
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmcd
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmcd_wait
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmconfig
@@ -360,6 +390,7 @@ fi
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogger
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogger_check
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogger_daily
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogger_daily_report
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogger_merge
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogreduce
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogrewrite
@@ -367,6 +398,7 @@ fi
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmnewlog
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmnsadd
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmnsdel
+%attr(755,root,root) %{_libexecdir}/pcp/bin/pmpause
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmpost
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmproxy
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmsignal
@@ -383,18 +415,52 @@ fi
 %{_datadir}/pcp/lib/pmdaproc.sh
 %{_datadir}/pcp/lib/rc-proc.sh
 %{_datadir}/pcp/lib/rc-proc.sh.minimal
+%{_datadir}/pcp/lib/utilproc.sh
 %config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pcp-pmie
 %config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pcp-pmlogger
+%config(noreplace) %verify(not md5 mtime size) /etc/cron.d/pcp-pmlogger-daily-report
 %config(noreplace) %verify(not md5 mtime size) /etc/sasl/pmcd.conf
 %dir %{_sysconfdir}/pcp
+%dir %{_sysconfdir}/pcp/discover
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/discover/pcp-kube-pods.conf
+%dir %{_sysconfdir}/pcp/dstat
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/aio
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/cpu
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/disk
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/freespace
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/fs
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/int
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/io
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/ipc
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/load
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/locks
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/mem
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/memcache
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/net
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/nfs
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/page
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/postfix
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/proc
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/redis
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/rpc
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/sockets
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/swap
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/sys
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/tcp
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/utmp
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/dstat/vm
 %dir %{_sysconfdir}/pcp/pmcd
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmcd/pmcd.conf
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmcd/pmcd.options
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmcd/rc.local
 %attr(775,root,pcp) %dir %{_sysconfdir}/pcp/pmie
 %attr(664,pcp,pcp) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/control
+%attr(775,root,pcp) %dir %{_sysconfdir}/pcp/pmie/control.d
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmie/control.d/local
 %attr(775,root,pcp) %dir %{_sysconfdir}/pcp/pmlogger
 %attr(664,pcp,pcp) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/control
+%attr(775,root,pcp) %dir %{_sysconfdir}/pcp/pmlogger/control.d
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmlogger/control.d/local
 %dir %{_sysconfdir}/pcp/pmmgr
 %doc %{_sysconfdir}/pcp/pmmgr/README
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmie
@@ -405,9 +471,14 @@ fi
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmlogmerge-granular
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmlogmerge-rewrite
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmmgr.options
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/disk-full-retention
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/disk-full-threshold
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/pmlogreduce
 %config(noreplace,missingok) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmmgr/target-discovery.example-avahi
 %dir %{_sysconfdir}/pcp/pmproxy
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmproxy/pmproxy.options
+%dir %{_sysconfdir}/pcp/pmrep
+%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmrep/pmrep.conf
 %dir %{_sysconfdir}/pcp/pmwebd
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmwebd/pmwebd.options
 %attr(754,root,root) /etc/rc.d/init.d/pcp
@@ -424,17 +495,27 @@ fi
 %{systemdunitdir}/pmproxy.service
 %{systemdunitdir}/pmwebd.service
 %dir /var/lib/pcp/config
+%dir /var/lib/pcp/config/derived
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/derived/cpu-util.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/derived/iostat.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/derived/proc.conf
 %dir /var/lib/pcp/config/pmafm
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmafm/pcp
 %dir /var/lib/pcp/config/pmchart
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Apache
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/BusyCPU
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Cisco
-#%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/MemAvailable
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Sendmail
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Iostat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Iostat.DM
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Iostat.MD
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/MemAvailable
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Sample
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Web.*
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Sendmail
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/shping.*
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Web.*
 %attr(775,pcp,pcp) %dir /var/lib/pcp/config/pmda
+%dir /var/lib/pcp/config/pmie
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmie/crontab.docker
 %dir /var/lib/pcp/config/pmieconf
 %dir /var/lib/pcp/config/pmieconf/cisco
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/cisco/in_util
@@ -445,6 +526,11 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/cpu/low_util
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/cpu/system
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/cpu/util
+%dir /var/lib/pcp/config/pmieconf/dm
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/dm/data_high_util
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/dm/metadata_high_util
+%dir /var/lib/pcp/config/pmieconf/entropy
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/entropy/available
 %dir /var/lib/pcp/config/pmieconf/filesys
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/filesys/filling
 %dir /var/lib/pcp/config/pmieconf/global
@@ -462,6 +548,8 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/pernetif/errors
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/pernetif/packets
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/pernetif/util
+%dir /var/lib/pcp/config/pmieconf/primary
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/primary/pmda_status
 %dir /var/lib/pcp/config/pmieconf/shping
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/shping/response
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/shping/status
@@ -478,8 +566,11 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/disk/perdisk
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/disk/perpartition
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/disk/summary
+%dir /var/lib/pcp/config/pmlogconf/elasticsearch
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/elasticsearch/summary
 %dir /var/lib/pcp/config/pmlogconf/filesystem
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/filesystem/all
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/filesystem/rpc-server
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/filesystem/summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/filesystem/xfs-all
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/filesystem/xfs-io-linux
@@ -499,22 +590,38 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/kernel/syscalls-linux
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/kernel/syscalls-percpu-irix
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/kernel/vnodes
+%dir /var/lib/pcp/config/pmlogconf/kvm
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/kvm/kvm
+%dir /var/lib/pcp/config/pmlogconf/libvirt
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/libvirt/libvirt
+%dir /var/lib/pcp/config/pmlogconf/memcache
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memcache/summary
 %dir /var/lib/pcp/config/pmlogconf/mailq
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/mailq/summary
 %dir /var/lib/pcp/config/pmlogconf/memory
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/buddyinfo
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/ksminfo
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/meminfo
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/proc-linux
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/slabinfo
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/swap-activity
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/swap-all
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/swap-config
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/tlb-irix
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/vmstat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/memory/zoneinfo
+%dir /var/lib/pcp/config/pmlogconf/mmv
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/mmv/summary
 %dir /var/lib/pcp/config/pmlogconf/mysql
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/mysql/summary
 %dir /var/lib/pcp/config/pmlogconf/netfilter
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/netfilter/config
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/netfilter/summary
 %dir /var/lib/pcp/config/pmlogconf/networking
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/icmp6
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/interface-all
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/interface-summary
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/ip6
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/mbufs
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/multicast
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/nfs2-client
@@ -527,13 +634,19 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/rpc
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/socket-irix
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/socket-linux
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/softnet
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/streams
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/tcp-activity-irix
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/tcp-activity-linux
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/tcp-all
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/udp6
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/udp-all
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/udp-packets-irix
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/networking/udp-packets-linux
+%dir /var/lib/pcp/config/pmlogconf/nginx
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/nginx/summary
+%dir /var/lib/pcp/config/pmlogconf/oracle
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/oracle/summary
 %dir /var/lib/pcp/config/pmlogconf/platform
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/platform/hinv
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/platform/linux
@@ -558,27 +671,43 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/shping/summary
 %dir /var/lib/pcp/config/pmlogconf/sqlserver
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/sqlserver/summary
+%dir /var/lib/pcp/config/pmlogconf/storage
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/storage/vdo
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/storage/vdo-summary
 %dir /var/lib/pcp/config/pmlogconf/tools
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/atop
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/atop-hotproc
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/atop-httpstats
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/atop-nfsclient
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/atop-proc
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/atop-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/collectl
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/collectl-interrupts
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/collectl-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/dmcache
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/free
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/free-summary
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/hotproc
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/iostat
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/ip
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/ipcs
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/mpstat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/mpstat-interrupts
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/mpstat-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/numastat
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pcp-summary
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pidstat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pidstat-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmclient
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmclient-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmieconf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/pmstat
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/sar
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/sar-summary
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/tapestat
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/uptime
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/vector
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/vector-summary
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/vmstat
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/tools/vmstat-summary
 %dir /var/lib/pcp/config/pmlogconf/v1.0
@@ -588,17 +717,51 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/v1.0/K0
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/v1.0/S0
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/v1.0/S1
+%dir /var/lib/pcp/config/pmlogconf/zeroconf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/zeroconf/atop-proc
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/zeroconf/nfsclient
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/zeroconf/numastat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/zeroconf/pidstat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/zeroconf/pidstat-summary
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/zeroconf/tapestat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/zeroconf/xfs-perdev
 %dir /var/lib/pcp/config/pmlogconf/zimbra
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/zimbra/all
 %dir /var/lib/pcp/config/pmlogger
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogger/config.pmstat
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogger/crontab.docker
 %dir /var/lib/pcp/config/pmlogrewrite
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/cgroup_units.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/jbd2_kernel_ulong.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_kernel_fixups.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_kernel_ulong.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_fs_nfsd_fixups.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_migrate.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_net_snmp_migrate.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_proc_net_tcp_migrate.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/linux_xfs_migrate.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/mysql_migrate.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/nfsclient_migrate.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/pmcd_migrate.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/proc_discrete_strings.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/proc_jiffies.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/proc_kernel_ulong.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/proc_kernel_ulong_migrate.conf
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/proc_scheduler.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/rpm_migrate.conf
 %dir /var/lib/pcp/pmdas
+%dir /var/lib/pcp/pmdas/activemq
+%attr(755,root,root) /var/lib/pcp/pmdas/activemq/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/activemq/Remove
+/var/lib/pcp/pmdas/activemq/ActiveMQ.pm
+/var/lib/pcp/pmdas/activemq/Cache.pm
+/var/lib/pcp/pmdas/activemq/JVMGarbageCollection.pm
+/var/lib/pcp/pmdas/activemq/JVMMemory.pm
+/var/lib/pcp/pmdas/activemq/JVMMemoryPool.pm
+/var/lib/pcp/pmdas/activemq/pmdaactivemq.pl
+/var/lib/pcp/pmdas/activemq/Queue.pm
+/var/lib/pcp/pmdas/activemq/RESTClient.pm
+/var/lib/pcp/pmdas/activemq/TimeSource.pm
 %dir /var/lib/pcp/pmdas/apache
 %doc /var/lib/pcp/pmdas/apache/README
 %attr(755,root,root) /var/lib/pcp/pmdas/apache/Install
@@ -616,10 +779,25 @@ fi
 /var/lib/pcp/pmdas/bash/help
 /var/lib/pcp/pmdas/bash/pmns
 /var/lib/pcp/pmdas/bash/root
+%dir /var/lib/pcp/pmdas/bind2
+%doc /var/lib/pcp/pmdas/bind2/README.md
+%attr(755,root,root) /var/lib/pcp/pmdas/bind2/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/bind2/Remove
+/var/lib/pcp/pmdas/bind2/bind2.conf
+/var/lib/pcp/pmdas/bind2/pmdabind2.pl
 %dir /var/lib/pcp/pmdas/bonding
 %attr(755,root,root) /var/lib/pcp/pmdas/bonding/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/bonding/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/bonding/pmdabonding.pl
+%dir /var/lib/pcp/pmdas/cifs
+%attr(755,root,root) /var/lib/pcp/pmdas/cifs/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/cifs/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/cifs/pmdacifs
+%attr(755,root,root) /var/lib/pcp/pmdas/cifs/pmda_cifs.so
+/var/lib/pcp/pmdas/cifs/domain.h
+/var/lib/pcp/pmdas/cifs/help
+/var/lib/pcp/pmdas/cifs/pmns
+/var/lib/pcp/pmdas/cifs/root
 %dir /var/lib/pcp/pmdas/cisco
 %doc /var/lib/pcp/pmdas/cisco/README
 %attr(755,root,root) /var/lib/pcp/pmdas/cisco/Install
@@ -636,6 +814,27 @@ fi
 %attr(755,root,root) /var/lib/pcp/pmdas/dbping/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/dbping/dbprobe.pl
 %attr(755,root,root) /var/lib/pcp/pmdas/dbping/pmdadbping.pl
+%dir /var/lib/pcp/pmdas/dm
+%attr(755,root,root) /var/lib/pcp/pmdas/dm/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/dm/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/dm/pmda_dm.so
+%attr(755,root,root) /var/lib/pcp/pmdas/dm/pmdadm
+/var/lib/pcp/pmdas/dm/domain.h
+/var/lib/pcp/pmdas/dm/help
+/var/lib/pcp/pmdas/dm/pmns.dmcache
+/var/lib/pcp/pmdas/dm/pmns.dmstats
+/var/lib/pcp/pmdas/dm/pmns.dmthin
+/var/lib/pcp/pmdas/dm/pmns.vdo
+/var/lib/pcp/pmdas/dm/root
+%dir /var/lib/pcp/pmdas/docker
+%attr(755,root,root) /var/lib/pcp/pmdas/docker/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/docker/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/docker/pmda_docker.so
+%attr(755,root,root) /var/lib/pcp/pmdas/docker/pmdadocker
+/var/lib/pcp/pmdas/docker/domain.h
+/var/lib/pcp/pmdas/docker/help
+/var/lib/pcp/pmdas/docker/pmns
+/var/lib/pcp/pmdas/docker/root
 %dir /var/lib/pcp/pmdas/ds389
 %attr(755,root,root) /var/lib/pcp/pmdas/ds389/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/ds389/Remove
@@ -660,10 +859,20 @@ fi
 %attr(755,root,root) /var/lib/pcp/pmdas/gluster/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/gluster/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/gluster/pmdagluster.python
+%dir /var/lib/pcp/pmdas/gpfs
+%attr(755,root,root) /var/lib/pcp/pmdas/gpfs/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/gpfs/Remove
+/var/lib/pcp/pmdas/gpfs/pmdagpfs.pl
 %dir /var/lib/pcp/pmdas/gpsd
 %attr(755,root,root) /var/lib/pcp/pmdas/gpsd/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/gpsd/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/gpsd/pmdagpsd.pl
+%dir /var/lib/pcp/pmdas/haproxy
+%attr(755,root,root) /var/lib/pcp/pmdas/haproxy/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/haproxy/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/haproxy/connect
+%attr(755,root,root) /var/lib/pcp/pmdas/haproxy/pmdahaproxy.python
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/haproxy/haproxy.conf
 %dir /var/lib/pcp/pmdas/jbd2
 %attr(755,root,root) /var/lib/pcp/pmdas/jbd2/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/jbd2/Remove
@@ -693,6 +902,7 @@ fi
 %attr(755,root,root) /var/lib/pcp/pmdas/linux/pmda_linux.so
 /var/lib/pcp/pmdas/linux/domain.h
 /var/lib/pcp/pmdas/linux/help*
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/linux/samplebandwidth.conf
 %dir /var/lib/pcp/pmdas/lmsensors
 %doc /var/lib/pcp/pmdas/lmsensors/README
 %attr(755,root,root) /var/lib/pcp/pmdas/lmsensors/Install
@@ -711,6 +921,10 @@ fi
 /var/lib/pcp/pmdas/logger/help
 /var/lib/pcp/pmdas/logger/pmns
 /var/lib/pcp/pmdas/logger/root
+%dir /var/lib/pcp/pmdas/lustre
+%attr(755,root,root) /var/lib/pcp/pmdas/lustre/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/lustre/Remove
+/var/lib/pcp/pmdas/lustre/pmdalustre.pl
 %dir /var/lib/pcp/pmdas/lustrecomm
 %doc /var/lib/pcp/pmdas/lustrecomm/README
 %attr(755,root,root) /var/lib/pcp/pmdas/lustrecomm/Install
@@ -733,6 +947,10 @@ fi
 %attr(755,root,root) /var/lib/pcp/pmdas/memcache/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/memcache/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/memcache/pmdamemcache.pl
+%dir /var/lib/pcp/pmdas/mic
+%attr(755,root,root) /var/lib/pcp/pmdas/mic/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/mic/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/mic/pmdamic.python
 %dir /var/lib/pcp/pmdas/mmv
 %attr(755,root,root) /var/lib/pcp/pmdas/mmv/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/mmv/Remove
@@ -773,6 +991,7 @@ fi
 %dir /var/lib/pcp/pmdas/nfsclient
 %attr(755,root,root) /var/lib/pcp/pmdas/nfsclient/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/nfsclient/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/nfsclient/pmdanfsclient.python
 %dir /var/lib/pcp/pmdas/nginx
 %attr(755,root,root) /var/lib/pcp/pmdas/nginx/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/nginx/Remove
@@ -788,10 +1007,26 @@ fi
 /var/lib/pcp/pmdas/nvidia/help
 /var/lib/pcp/pmdas/nvidia/pmns
 /var/lib/pcp/pmdas/nvidia/root
+%dir /var/lib/pcp/pmdas/oracle
+%attr(755,root,root) /var/lib/pcp/pmdas/oracle/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/oracle/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/oracle/connect.pl
+/var/lib/pcp/pmdas/oracle/pmdaoracle.pl
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/oracle/sample.conf
 %dir /var/lib/pcp/pmdas/pdns
 %attr(755,root,root) /var/lib/pcp/pmdas/pdns/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/pdns/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/pdns/pmdapdns.pl
+%dir /var/lib/pcp/pmdas/pipe
+%doc /var/lib/pcp/pmdas/pipe/README
+%attr(755,root,root) /var/lib/pcp/pmdas/pipe/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/pipe/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/pipe/pmdapipe
+/var/lib/pcp/pmdas/pipe/domain.h
+/var/lib/pcp/pmdas/pipe/help
+/var/lib/pcp/pmdas/pipe/pmns
+/var/lib/pcp/pmdas/pipe/root
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/pipe/sample.conf
 %dir /var/lib/pcp/pmdas/pmcd
 %attr(755,root,root) /var/lib/pcp/pmdas/pmcd/pmda_pmcd.so
 /var/lib/pcp/pmdas/pmcd/help.*
@@ -810,6 +1045,17 @@ fi
 /var/lib/pcp/pmdas/proc/help
 /var/lib/pcp/pmdas/proc/root
 /var/lib/pcp/pmdas/proc/root_proc
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/proc/samplehotproc.conf
+%dir /var/lib/pcp/pmdas/prometheus
+%dir /var/lib/pcp/pmdas/prometheus/config.d
+%attr(755,root,root) /var/lib/pcp/pmdas/prometheus/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/prometheus/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/prometheus/pmdaprometheus.python
+%dir /var/lib/pcp/pmdas/redis
+%attr(755,root,root) /var/lib/pcp/pmdas/redis/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/redis/Remove
+/var/lib/pcp/pmdas/redis/pmdaredis.pl
+%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/redis/redis.conf
 %dir /var/lib/pcp/pmdas/roomtemp
 %doc /var/lib/pcp/pmdas/roomtemp/README
 %attr(755,root,root) /var/lib/pcp/pmdas/roomtemp/Install
@@ -819,6 +1065,14 @@ fi
 /var/lib/pcp/pmdas/roomtemp/help
 /var/lib/pcp/pmdas/roomtemp/pmns
 /var/lib/pcp/pmdas/roomtemp/root
+%dir /var/lib/pcp/pmdas/root
+%attr(755,root,root) /var/lib/pcp/pmdas/root/pmdaroot
+/var/lib/pcp/pmdas/root/domain.h
+/var/lib/pcp/pmdas/root/help
+/var/lib/pcp/pmdas/root/help.dir
+/var/lib/pcp/pmdas/root/help.pag
+/var/lib/pcp/pmdas/root/root
+/var/lib/pcp/pmdas/root/root_root
 %dir /var/lib/pcp/pmdas/rpm
 %attr(755,root,root) /var/lib/pcp/pmdas/rpm/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/rpm/Remove
@@ -840,9 +1094,12 @@ fi
 %doc /var/lib/pcp/pmdas/sample/README
 %attr(755,root,root) /var/lib/pcp/pmdas/sample/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/sample/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/sample/pmda_sample.so
+%attr(755,root,root) /var/lib/pcp/pmdas/sample/pmdasample
 /var/lib/pcp/pmdas/sample/Makefile
 /var/lib/pcp/pmdas/sample/domain.h
 /var/lib/pcp/pmdas/sample/events.[ch]
+/var/lib/pcp/pmdas/sample/libpcp.h
 /var/lib/pcp/pmdas/sample/percontext.[ch]
 /var/lib/pcp/pmdas/sample/pmda.c
 /var/lib/pcp/pmdas/sample/sample.c
@@ -882,6 +1139,19 @@ fi
 /var/lib/pcp/pmdas/simple/Makefile
 /var/lib/pcp/pmdas/simple/simple.c
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/simple/simple.conf
+%dir /var/lib/pcp/pmdas/slurm
+%attr(755,root,root) /var/lib/pcp/pmdas/slurm/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/slurm/Remove
+/var/lib/pcp/pmdas/slurm/pmdaslurm.pl
+%dir /var/lib/pcp/pmdas/smart
+%attr(755,root,root) /var/lib/pcp/pmdas/smart/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/smart/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/smart/pmda_smart.so
+%attr(755,root,root) /var/lib/pcp/pmdas/smart/pmdasmart
+/var/lib/pcp/pmdas/smart/domain.h
+/var/lib/pcp/pmdas/smart/help
+/var/lib/pcp/pmdas/smart/pmns
+/var/lib/pcp/pmdas/smart/root
 %dir /var/lib/pcp/pmdas/snmp
 %attr(755,root,root) /var/lib/pcp/pmdas/snmp/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/snmp/Remove
@@ -906,13 +1176,6 @@ fi
 /var/lib/pcp/pmdas/systemd/help
 /var/lib/pcp/pmdas/systemd/pmns
 /var/lib/pcp/pmdas/systemd/root
-%if %{with systemtap}
-%dir /var/lib/pcp/pmdas/systemtap
-%attr(755,root,root) /var/lib/pcp/pmdas/systemtap/Install
-%attr(755,root,root) /var/lib/pcp/pmdas/systemtap/Remove
-%attr(755,root,root) %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/systemtap/pmdasystemtap.pl
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/systemtap/probes.stp
-%endif
 %dir /var/lib/pcp/pmdas/trace
 %doc /var/lib/pcp/pmdas/trace/README
 %attr(755,root,root) /var/lib/pcp/pmdas/trace/Install
@@ -945,6 +1208,10 @@ fi
 /var/lib/pcp/pmdas/txmon/txmon.c
 /var/lib/pcp/pmdas/txmon/txmon.h
 /var/lib/pcp/pmdas/txmon/txrecord.c
+%dir /var/lib/pcp/pmdas/unbound
+%attr(755,root,root) /var/lib/pcp/pmdas/unbound/Install
+%attr(755,root,root) /var/lib/pcp/pmdas/unbound/Remove
+%attr(755,root,root) /var/lib/pcp/pmdas/unbound/pmdaunbound.python
 %dir /var/lib/pcp/pmdas/vmware
 %attr(755,root,root) /var/lib/pcp/pmdas/vmware/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/vmware/Remove
@@ -981,6 +1248,8 @@ fi
 %attr(755,root,root) /var/lib/pcp/pmdas/zswap/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/zswap/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/zswap/pmdazswap.python
+%dir /var/lib/pcp/pmns
+/var/lib/pcp/pmns/root_root
 %attr(775,pcp,pcp) %dir /var/lib/pcp/tmp
 %attr(775,pcp,pcp) %dir /var/lib/pcp/tmp/pmie
 %attr(775,pcp,pcp) %dir /var/lib/pcp/tmp/pmlogger
@@ -991,47 +1260,85 @@ fi
 %attr(775,pcp,pcp) %dir /var/log/pcp/pmmgr
 %attr(775,pcp,pcp) %dir /var/log/pcp/pmproxy
 %attr(775,pcp,pcp) %dir /var/log/pcp/pmwebd
-%{_mandir}/man1/PCPIntro.1*
 %{_mandir}/man1/chkhelp.1*
 %{_mandir}/man1/collectl2pcp.1*
 %{_mandir}/man1/dbpmda.1*
 %{_mandir}/man1/dbprobe.1*
+%{_mandir}/man1/ganglia2pcp.1*
 %{_mandir}/man1/genpmda.1*
 %{_mandir}/man1/iostat2pcp.1*
 %{_mandir}/man1/mkaf.1*
 %{_mandir}/man1/mrtg2pcp.1*
 %{_mandir}/man1/pcp.1*
+%{_mandir}/man1/pcp2csv.1
+%{_mandir}/man1/pcp2graphite.1*
+%{_mandir}/man1/pcp2influxdb.1*
+%{_mandir}/man1/pcp2json.1*
+%{_mandir}/man1/pcp2xml.1*
+%{_mandir}/man1/pcp-atop.1*
+%{_mandir}/man1/pcp-atopsar.1*
+%{_mandir}/man1/pcp-collectl.1*
 %{_mandir}/man1/pcp-dmcache.1*
+%{_mandir}/man1/pcp-dstat.1*
 %{_mandir}/man1/pcp-free.1*
+%{_mandir}/man1/pcpintro.1
+%{_mandir}/man1/PCPIntro.1*
+%{_mandir}/man1/pcp-iostat.1*
+%{_mandir}/man1/pcp-ipcs.1*
+%{_mandir}/man1/pcp-kube-pods.1*
+%{_mandir}/man1/pcp-lvmcache.1
+%{_mandir}/man1/pcp-mpstat.1*
 %{_mandir}/man1/pcp-numastat.1*
+%{_mandir}/man1/pcp-pidstat.1*
+%{_mandir}/man1/pcp-python.1*
+%{_mandir}/man1/pcp-shping.1*
+%{_mandir}/man1/pcp-summary.1
+%{_mandir}/man1/pcp-tapestat.1*
 %{_mandir}/man1/pcp-uptime.1*
+%{_mandir}/man1/pcp-verify.1*
+%{_mandir}/man1/pcp-vmstat.1*
+%{_mandir}/man1/perfalloc.1*
 %{_mandir}/man1/pmafm.1*
 %{_mandir}/man1/pmcd.1*
 %{_mandir}/man1/pmcd_wait.1*
 %{_mandir}/man1/pmclient.1*
+%{_mandir}/man1/pmclient_fg.1
 %{_mandir}/man1/pmcollectl.1*
 %{_mandir}/man1/pmconfig.1*
+%{_mandir}/man1/pmdaactivemq.1*
 %{_mandir}/man1/pmdaapache.1*
 %{_mandir}/man1/pmdabash.1*
+%{_mandir}/man1/pmdabcc.1*
+%{_mandir}/man1/pmdabind2.1*
 %{_mandir}/man1/pmdabonding.1*
+%{_mandir}/man1/pmdacifs.1*
 %{_mandir}/man1/pmdacisco.1*
 %{_mandir}/man1/pmdadbping.1*
+%{_mandir}/man1/pmdadm.1*
+%{_mandir}/man1/pmdadocker.1*
 %{_mandir}/man1/pmdads389.1*
 %{_mandir}/man1/pmdads389log.1*
 %{_mandir}/man1/pmdaelasticsearch.1*
 %{_mandir}/man1/pmdagfs2.1*
 %{_mandir}/man1/pmdagluster.1*
+%{_mandir}/man1/pmdagpfs.1*
 %{_mandir}/man1/pmdagpsd.1*
+%{_mandir}/man1/pmdahaproxy.1*
 %{_mandir}/man1/pmdaib.1*
 %{_mandir}/man1/pmdajbd2.1*
+%{_mandir}/man1/pmdajson.1*
 %{_mandir}/man1/pmdakernel.1*
 %{_mandir}/man1/pmdakvm.1*
+%{_mandir}/man1/pmdalibvirt.1*
 %{_mandir}/man1/pmdalinux.1*
+%{_mandir}/man1/pmdalio.1*
 %{_mandir}/man1/pmdalmsensors.1*
 %{_mandir}/man1/pmdalogger.1*
+%{_mandir}/man1/pmdalustre.1*
 %{_mandir}/man1/pmdalustrecomm.1*
 %{_mandir}/man1/pmdamailq.1*
 %{_mandir}/man1/pmdamemcache.1*
+%{_mandir}/man1/pmdamic.1*
 %{_mandir}/man1/pmdammv.1*
 %{_mandir}/man1/pmdamounts.1*
 %{_mandir}/man1/pmdamysql.1*
@@ -1040,12 +1347,20 @@ fi
 %{_mandir}/man1/pmdanews.1*
 %{_mandir}/man1/pmdanfsclient.1*
 %{_mandir}/man1/pmdanginx.1*
+%{_mandir}/man1/pmdanutcracker.1*
 %{_mandir}/man1/pmdanvidia.1*
+%{_mandir}/man1/pmdaoracle.1*
+%{_mandir}/man1/pmdapapi.1*
 %{_mandir}/man1/pmdapdns.1*
+%{_mandir}/man1/pmdaperfevent.1*
+%{_mandir}/man1/pmdapipe.1*
 %{_mandir}/man1/pmdapostfix.1*
 %{_mandir}/man1/pmdapostgresql.1*
 %{_mandir}/man1/pmdaproc.1*
+%{_mandir}/man1/pmdaprometheus.1*
+%{_mandir}/man1/pmdaredis.1*
 %{_mandir}/man1/pmdaroomtemp.1*
+%{_mandir}/man1/pmdaroot.1*
 %{_mandir}/man1/pmdarpm.1*
 %{_mandir}/man1/pmdarsyslog.1*
 %{_mandir}/man1/pmdasamba.1*
@@ -1053,21 +1368,21 @@ fi
 %{_mandir}/man1/pmdasendmail.1*
 %{_mandir}/man1/pmdashping.1*
 %{_mandir}/man1/pmdasimple.1*
+%{_mandir}/man1/pmdaslurm.1*
+%{_mandir}/man1/pmdasmart.1*
 %{_mandir}/man1/pmdasnmp.1*
 %{_mandir}/man1/pmdasummary.1*
 %{_mandir}/man1/pmdasystemd.1*
-%if %{with systemtap}
-%{_mandir}/man1/pmdasystemtap.1*
-%endif
 %{_mandir}/man1/pmdate.1*
 %{_mandir}/man1/pmdatrace.1*
 %{_mandir}/man1/pmdatrivial.1*
 %{_mandir}/man1/pmdatxmon.1*
+%{_mandir}/man1/pmdaunbound.1*
 %{_mandir}/man1/pmdavmware.1*
 %{_mandir}/man1/pmdaweblog.1*
 %{_mandir}/man1/pmdaxfs.1*
-%{_mandir}/man1/pmdazswap.1*
 %{_mandir}/man1/pmdazimbra.1*
+%{_mandir}/man1/pmdazswap.1*
 %{_mandir}/man1/pmdbg.1*
 %{_mandir}/man1/pmdiff.1*
 %{_mandir}/man1/pmdumplog.1*
@@ -1080,10 +1395,11 @@ fi
 %{_mandir}/man1/pmie.1*
 %{_mandir}/man1/pmie2col.1*
 %{_mandir}/man1/pmie_check.1*
-%{_mandir}/man1/pmie_daily.1*
 %{_mandir}/man1/pmieconf.1*
+%{_mandir}/man1/pmie_daily.1*
 %{_mandir}/man1/pmiestatus.1*
 %{_mandir}/man1/pmiostat.1*
+%{_mandir}/man1/pmjson.1*
 %{_mandir}/man1/pmlc.1*
 %{_mandir}/man1/pmlock.1*
 %{_mandir}/man1/pmlogcheck.1*
@@ -1092,19 +1408,24 @@ fi
 %{_mandir}/man1/pmlogger.1*
 %{_mandir}/man1/pmlogger_check.1*
 %{_mandir}/man1/pmlogger_daily.1*
+%{_mandir}/man1/pmlogger_daily_report.1*
 %{_mandir}/man1/pmlogger_merge.1*
 %{_mandir}/man1/pmloglabel.1*
 %{_mandir}/man1/pmlogmv.1*
 %{_mandir}/man1/pmlogreduce.1*
 %{_mandir}/man1/pmlogrewrite.1*
+%{_mandir}/man1/pmlogsize.1*
 %{_mandir}/man1/pmlogsummary.1*
 %{_mandir}/man1/pmmgr.1*
 %{_mandir}/man1/pmnewlog.1*
 %{_mandir}/man1/pmnsadd.1*
 %{_mandir}/man1/pmnsdel.1*
+%{_mandir}/man1/pmpause.1*
 %{_mandir}/man1/pmpost.1*
 %{_mandir}/man1/pmprobe.1*
 %{_mandir}/man1/pmproxy.1*
+%{_mandir}/man1/pmpython.1*
+%{_mandir}/man1/pmrep.1*
 %{_mandir}/man1/pmsignal.1*
 %{_mandir}/man1/pmsleep.1*
 %{_mandir}/man1/pmsocks.1*
@@ -1116,6 +1437,11 @@ fi
 %{_mandir}/man1/sar2pcp.1*
 %{_mandir}/man1/sheet2pcp.1*
 %{_mandir}/man1/telnet-probe.1*
+%{_mandir}/man5/LOGARCHIVE.5*
+%{_mandir}/man5/pcp-atoprc.5*
+%{_mandir}/man5/pcp-dstat.5*
+%{_mandir}/man5/perfevent.conf.5*
+%{_mandir}/man5/pmrep.conf.5*
 
 %if %{with qt}
 %files gui
@@ -1132,6 +1458,8 @@ fi
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmsnap/control
 %{_datadir}/pcp-gui
 %{_desktopdir}/pmchart.desktop
+%{_iconsdir}/hicolor/*x*/apps/*.png
+%{_iconsdir}/hicolor/scalable*/apps/*.svg
 %{_mandir}/man1/pmchart.1*
 %{_mandir}/man1/pmconfirm.1*
 %{_mandir}/man1/pmdumptext.1*
@@ -1179,6 +1507,7 @@ fi
 %attr(755,root,root) %{_libdir}/libpcp_mmv.so.1
 %attr(755,root,root) %{_libdir}/libpcp_pmda.so.3
 %attr(755,root,root) %{_libdir}/libpcp_trace.so.2
+%attr(755,root,root) %{_libdir}/libpcp_web.so.1
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp.conf
 %{_sysconfdir}/pcp.env
 %dir %{_libexecdir}/pcp
@@ -1221,17 +1550,24 @@ fi
 %attr(755,root,root) %{_libdir}/libpcp_mmv.so
 %attr(755,root,root) %{_libdir}/libpcp_pmda.so
 %attr(755,root,root) %{_libdir}/libpcp_trace.so
+%attr(755,root,root) %{_libdir}/libpcp_web.so
 %{_includedir}/pcp
+%{_mandir}/man3/logimport.3
 %{_mandir}/man3/LOGIMPORT.3*
+%{_mandir}/man3/mmv_*.3*
+%{_mandir}/man3/pcpintro.3
 %{_mandir}/man3/PCPIntro.3*
+%{_mandir}/man3/__pm*.3*
+%{_mandir}/man3/pm*.3*
 %{_mandir}/man3/PMAPI.3*
+%{_mandir}/man3/PMAPI_INTERNAL.3*
 %{_mandir}/man3/PMDA.3*
 %{_mandir}/man3/PMWEBAPI.3*
-%{_mandir}/man3/QMC.3*
 %{_mandir}/man3/Qmc*.3*
-%{_mandir}/man3/__pm*.3*
-%{_mandir}/man3/mmv_*.3*
-%{_mandir}/man3/pm*.3*
+%{_mandir}/man3/QMC.3*
+%{_pkgconfigdir}/libpcp.pc
+%{_pkgconfigdir}/libpcp_import.pc
+%{_pkgconfigdir}/libpcp_pmda.pc
 
 %files static
 %defattr(644,root,root,755)
@@ -1241,6 +1577,7 @@ fi
 %{_libdir}/libpcp_mmv.a
 %{_libdir}/libpcp_pmda.a
 %{_libdir}/libpcp_trace.a
+%{_libdir}/libpcp_web.a
 
 %files -n perl-pcp
 %defattr(644,root,root,755)
