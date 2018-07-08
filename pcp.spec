@@ -5,7 +5,7 @@
 # NOTE: user/group must be in -libs because of /var/run/pcp, needed for Make.stdpmid in post
 #
 # Conditional build:
-%bcond_without	qt		# Qt 4.x based GUI
+%bcond_without	qt		# Qt 5.x based GUI
 %bcond_without	systemtap	# systemtap/dtrace support
 
 %include	/usr/lib/rpm/macros.perl
@@ -54,12 +54,12 @@ BuildRequires:	rpmbuild(macros) >= 1.219
 BuildRequires:	systemd-devel
 %{?with_systemtap:BuildRequires:	systemtap-sdt-devel}
 %if %{with qt}
-BuildRequires:	QtAssistant-compat-devel >= 4.4
-BuildRequires:	QtCore-devel >= 4.4
-BuildRequires:	QtGui-devel >= 4.4
-BuildRequires:	QtSvg-devel >= 4.4
-BuildRequires:	qt4-build >= 4.4
-BuildRequires:	qt4-qmake >= 4.4
+BuildRequires:	Qt5Concurrent-devel
+BuildRequires:	Qt5Core-devel
+BuildRequires:	Qt5Gui-devel
+BuildRequires:	Qt5Svg-devel
+BuildRequires:	qt5-build
+BuildRequires:	qt5-qmake
 %endif
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	libmicrohttpd >= 0.9.10
