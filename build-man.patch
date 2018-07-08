@@ -1,0 +1,11 @@
+--- pcp-4.1.0/configure.ac~	2018-07-08 22:11:20.000000000 +0200
++++ pcp-4.1.0/configure.ac	2018-07-08 22:24:30.561502083 +0200
+@@ -3143,7 +3143,7 @@
+ AC_SUBST(pcp_x11_pre)
+ 
+ dnl man pages (source)
+-have_manpages=false
++have_manpages=true
+ have_gzipped_manpages=false
+ have_bzip2ed_manpages=false
+ have_lzmaed_manpages=false

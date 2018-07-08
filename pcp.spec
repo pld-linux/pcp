@@ -18,7 +18,7 @@ License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	https://github.com/performancecopilot/pcp/archive/%{version}.tar.gz
 # Source0-md5:	12e82f2464452e74d0104caf964df994
-
+Patch0:		build-man.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
 Patch3:		%{name}-saslconfdir.patch
@@ -219,7 +219,7 @@ Sondy systemtap/dtrace dla PCP.
 
 %prep
 %setup -q
-
+%patch0 -p1
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
