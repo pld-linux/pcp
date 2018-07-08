@@ -1,0 +1,11 @@
+--- pcp-4.1.0/configure.ac~	2018-07-08 22:24:30.000000000 +0200
++++ pcp-4.1.0/configure.ac	2018-07-08 22:34:57.992346081 +0200
+@@ -3239,7 +3239,7 @@
+ inkscape=$INKSCAPE
+ AC_SUBST(inkscape)
+ 
+-have_hicolor_icons=false
++have_hicolor_icons=true
+ if test -d /usr/share/icons/hicolor -a -n "$INKSCAPE"
+ then
+     AC_MSG_NOTICE([adding hicolor desktop icons to the build])

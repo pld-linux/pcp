@@ -24,6 +24,7 @@ Patch2:		%{name}-nspr.patch
 Patch3:		%{name}-saslconfdir.patch
 Patch4:		%{name}-rpm.patch
 Patch5:		python-install.patch
+Patch6:		install-icons.patch
 URL:		http://pcp.io/
 BuildRequires:	autoconf >= 2.60
 BuildRequires:	avahi-devel
@@ -225,6 +226,7 @@ Sondy systemtap/dtrace dla PCP.
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
 
 %build
 QTDIR=%{_libdir}/qt5; export QTDIR
