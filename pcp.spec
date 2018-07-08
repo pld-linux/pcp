@@ -43,6 +43,7 @@ BuildRequires:	openssl-devel
 BuildRequires:	perl-DBD-mysql
 BuildRequires:	perl-DBD-Pg
 BuildRequires:	perl-ExtUtils-MakeMaker
+BuildRequires:	perl-JSON
 BuildRequires:	perl-Net-SNMP
 BuildRequires:	perl-base
 BuildRequires:	perl-libwww
