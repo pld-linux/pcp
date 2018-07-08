@@ -40,9 +40,12 @@ BuildRequires:	libmicrohttpd-devel >= 0.9.10
 BuildRequires:	nspr-devel >= 4
 BuildRequires:	nss-devel >= 3
 BuildRequires:	openssl-devel
+BuildRequires:	perl-DBD-mysql
 BuildRequires:	perl-DBD-Pg
 BuildRequires:	perl-ExtUtils-MakeMaker
+BuildRequires:	perl-Net-SNMP
 BuildRequires:	perl-base
+BuildRequires:	perl-libwww
 BuildRequires:	perl-tools-pod
 BuildRequires:	pkgconfig
 BuildRequires:	python-devel >= 2.0
