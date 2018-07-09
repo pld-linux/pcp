@@ -13,7 +13,7 @@ Summary:	Performance Co-Pilot - system level performance monitoring and manageme
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
 Version:	4.1.0
-Release:	1
+Release:	2
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	https://github.com/performancecopilot/pcp/archive/%{version}.tar.gz
@@ -357,8 +357,9 @@ fi
 %attr(755,root,root) %{_bindir}/pmval
 %attr(755,root,root) %{_bindir}/sar2pcp
 %attr(755,root,root) %{_bindir}/sheet2pcp
-%attr(755,root,root) %{_libexecdir}/pcp/bin/chkhelp
+%dir %{_libexecdir}/pcp/bin/discover
 %attr(755,root,root) %{_libexecdir}/pcp/bin/discover/pcp-kube-pods
+%attr(755,root,root) %{_libexecdir}/pcp/bin/chkhelp
 %attr(755,root,root) %{_libexecdir}/pcp/bin/install-sh
 %attr(755,root,root) %{_libexecdir}/pcp/bin/mkaf
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pcp-atop
