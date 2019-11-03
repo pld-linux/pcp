@@ -3,7 +3,7 @@
 @@ -693,13 +693,7 @@ SETUP_PY_BUILD_OPTIONS = --include-dirs=
  SETUP_PY_BUILD_OPTIONS += --library-dirs=$(TOPDIR)/src/libpcp/src:$(TOPDIR)/src/libpcp_pmda/src:$(TOPDIR)/src/libpcp_gui/src:$(TOPDIR)/src/libpcp_import/src:$(TOPDIR)/src/libpcp_mmv/src
  SETUP_PY_INSTALL_OPTIONS = --skip-build
- SETUP_PY_INSTALL_OPTIONS += --root="$${DIST_ROOT-/}"
+ SETUP_PY_INSTALL_OPTIONS += --root="$${DIST_ROOT:-/}"
 -ifeq "$(PYTHON_PREFIX)" "/usr"
 -ifeq "$(PACKAGE_DISTRIBUTION)" "debian"
 -SETUP_PY_INSTALL_OPTIONS += --install-layout=deb
@@ -11,6 +11,6 @@
 -else
  SETUP_PY_INSTALL_OPTIONS += --prefix=$(PYTHON_PREFIX)
 -endif
- # RPM byte-compiles and installs results in our DIST_ROOT, cater for this:
- ifeq "$(shell [ '$(TARGET_OS)' = linux -a '$(PACKAGE_DISTRIBUTION)' != gentoo \
- 	      ] && echo 1)" "1"
+ ifeq "$(ENABLE_PYTHON3)" "true"
+ SETUP_PY_BUILD_OPTIONS += -DENABLE_PYTHON3
+ endif
