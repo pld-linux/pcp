@@ -8,7 +8,6 @@
 %bcond_without	qt		# Qt 5.x based GUI
 %bcond_without	systemtap	# systemtap/dtrace support
 
-%include	/usr/lib/rpm/macros.perl
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
