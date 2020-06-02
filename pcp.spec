@@ -245,7 +245,8 @@ Sondy systemtap/dtrace dla PCP.
       src/pmdas/redis/pmdaredis.pl \
       src/pmdas/simple/pmdasimple.perl \
       src/sar2pcp/sar2pcp \
-      src/sheet2pcp/sheet2pcp
+      src/sheet2pcp/sheet2pcp \
+      src/pmdas/perfevent/perfevent-makerewrite.pl
 
 find \( -name '*.py' -o -name '*.python' \) -print0 | xargs -0 \
       %{__sed} -E -i -e '1s,#!\s*/usr/bin/env\s+pmpython(\s|$),#!%{_bindir}/pmpython\1,'
