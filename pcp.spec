@@ -8,13 +8,14 @@
 #
 # Conditional build:
 %bcond_without	qt		# Qt 5.x based GUI
+%bcond_with	rpm5		# build with rpm5
 %bcond_without	systemtap	# systemtap/dtrace support
 
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
 Version:	5.1.1
-Release:	1
+Release:	2
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	https://github.com/performancecopilot/pcp/archive/%{version}/%{name}-%{version}.tar.gz
@@ -54,7 +55,7 @@ BuildRequires:	python-devel >= 2.0
 BuildRequires:	python3-devel >= 1:3.2
 BuildRequires:	python3-psycopg2
 BuildRequires:	readline-devel
-BuildRequires:	rpm-devel >= 5
+BuildRequires:	rpm-devel
 BuildRequires:	rpm-perlprov
 BuildRequires:	rpm-pythonprov
 BuildRequires:	rpmbuild(macros) >= 1.219
@@ -202,9 +203,7 @@ Summary:	bash-completion for PCP utilities
 Summary(pl.UTF-8):	Bashowe uzupełnianie nazw dla narzędzi PCP
 Group:		Applications/Shells
 Requires:	bash-completion
-%if "%{_rpmversion}" >= "5"
-BuildArch:	noarch
-%endif
+%{?noarchpackage}
 
 %description -n bash-completion-pcp
 bash-completion for PCP utilities.
@@ -231,7 +230,7 @@ Sondy systemtap/dtrace dla PCP.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-%patch4 -p1
+%{?with_rpm5:%patch4 -p1}
 %patch5 -p1
 %patch6 -p1
 
