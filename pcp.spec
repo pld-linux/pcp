@@ -207,7 +207,7 @@ Summary:	bash-completion for PCP utilities
 Summary(pl.UTF-8):	Bashowe uzupełnianie nazw dla narzędzi PCP
 Group:		Applications/Shells
 Requires:	bash-completion
-%{?noarchpackage}
+BuildArch:	noarch
 
 %description -n bash-completion-pcp
 bash-completion for PCP utilities.
