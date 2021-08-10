@@ -16,7 +16,7 @@ Summary:	Performance Co-Pilot - system level performance monitoring and manageme
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
 Version:	5.2.5
-Release:	3
+Release:	4
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	https://github.com/performancecopilot/pcp/archive/%{version}/%{name}-%{version}.tar.gz
@@ -1590,6 +1590,20 @@ fi
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmcpp
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmlogger_rewrite
 %attr(755,root,root) %{_libexecdir}/pcp/bin/pmnsmerge
+%dir %{_libexecdir}/pcp/pmns
+%attr(755,root,root) %{_libexecdir}/pcp/pmns/Make.stdpmid
+%attr(755,root,root) %{_libexecdir}/pcp/pmns/Rebuild
+%{_libexecdir}/pcp/pmns/Makefile
+%{_libexecdir}/pcp/pmns/root_jbd2
+%{_libexecdir}/pcp/pmns/root_kvm
+%{_libexecdir}/pcp/pmns/root_linux
+%{_libexecdir}/pcp/pmns/root_mmv
+%{_libexecdir}/pcp/pmns/root_pmcd
+%{_libexecdir}/pcp/pmns/root_pmproxy
+%{_libexecdir}/pcp/pmns/root_proc
+%{_libexecdir}/pcp/pmns/root_xfs
+%{_libexecdir}/pcp/pmns/stdpmid.pcp
+%config(noreplace) %verify(not md5 mtime size) %{_libexecdir}/pcp/pmns/stdpmid.local
 %dir /var/lib/pcp
 %dir /var/lib/pcp/pmns
 %attr(755,root,root) /var/lib/pcp/pmns/Make.stdpmid
