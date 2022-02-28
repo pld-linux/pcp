@@ -15,12 +15,12 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	5.2.5
-Release:	5
+Version:	5.3.6
+Release:	0.1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	https://github.com/performancecopilot/pcp/archive/%{version}/%{name}-%{version}.tar.gz
-# Source0-md5:	81d92938cec8e202f57d9d0db45f4637
+# Source0-md5:	c753c01cad55719e67fc62b7a20bc0ef
 Patch0:		build-man.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
