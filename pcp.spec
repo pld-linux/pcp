@@ -9,14 +9,13 @@
 #
 # Conditional build:
 %bcond_without	qt		# Qt 5.x based GUI
-%bcond_with	rpm5		# build with rpm5
 %bcond_without	systemtap	# systemtap/dtrace support
 
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
 Version:	5.3.6
-Release:	0.1
+Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	https://github.com/performancecopilot/pcp/archive/%{version}/%{name}-%{version}.tar.gz
@@ -25,7 +24,6 @@ Patch0:		build-man.patch
 Patch1:		%{name}-opt.patch
 Patch2:		%{name}-nspr.patch
 Patch3:		%{name}-saslconfdir.patch
-Patch4:		%{name}-rpm.patch
 Patch5:		python-install.patch
 Patch6:		install-icons.patch
 URL:		http://pcp.io/
@@ -234,7 +232,6 @@ Sondy systemtap/dtrace dla PCP.
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-%{?with_rpm5:%patch4 -p1}
 %patch5 -p1
 %patch6 -p1
 
@@ -504,8 +501,6 @@ fi
 %dir %{_sysconfdir}/pcp/pmproxy
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmproxy/pmproxy.conf
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmproxy/pmproxy.options
-%dir %{_sysconfdir}/pcp/pmrep
-%config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmrep/pmrep.conf
 %dir %{_sysconfdir}/pcp/pmseries
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/pcp/pmseries/pmseries.conf
 %dir %{_sysconfdir}/pcp/snmp
@@ -531,10 +526,6 @@ fi
 %{systemdunitdir}/pmie.service
 %{systemdunitdir}/pmlogger_check.service
 %{systemdunitdir}/pmlogger_check.timer
-%{systemdunitdir}/pmlogger_daily-poll.service
-%{systemdunitdir}/pmlogger_daily-poll.timer
-%{systemdunitdir}/pmlogger_daily_report-poll.service
-%{systemdunitdir}/pmlogger_daily_report-poll.timer
 %{systemdunitdir}/pmlogger_daily_report.service
 %{systemdunitdir}/pmlogger_daily_report.timer
 %{systemdunitdir}/pmlogger_daily.service
@@ -787,7 +778,6 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/proc_kernel_ulong.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/proc_kernel_ulong_migrate.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/proc_scheduler.conf
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/rpm_migrate.conf
 %dir /var/lib/pcp/pmdas
 %dir /var/lib/pcp/pmdas/activemq
 %attr(755,root,root) /var/lib/pcp/pmdas/activemq/Install
@@ -1151,15 +1141,6 @@ fi
 /var/lib/pcp/pmdas/root/help.pag
 /var/lib/pcp/pmdas/root/root
 /var/lib/pcp/pmdas/root/root_root
-%dir /var/lib/pcp/pmdas/rpm
-%attr(755,root,root) /var/lib/pcp/pmdas/rpm/Install
-%attr(755,root,root) /var/lib/pcp/pmdas/rpm/Remove
-%attr(755,root,root) /var/lib/pcp/pmdas/rpm/pmda_rpm.so
-%attr(755,root,root) /var/lib/pcp/pmdas/rpm/pmdarpm
-/var/lib/pcp/pmdas/rpm/domain.h
-/var/lib/pcp/pmdas/rpm/help
-/var/lib/pcp/pmdas/rpm/pmns
-/var/lib/pcp/pmdas/rpm/root
 %dir /var/lib/pcp/pmdas/rsyslog
 %attr(755,root,root) /var/lib/pcp/pmdas/rsyslog/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/rsyslog/Remove
@@ -1291,10 +1272,6 @@ fi
 %attr(755,root,root) /var/lib/pcp/pmdas/unbound/Install
 %attr(755,root,root) /var/lib/pcp/pmdas/unbound/Remove
 %attr(755,root,root) /var/lib/pcp/pmdas/unbound/pmdaunbound.python
-%dir /var/lib/pcp/pmdas/vmware
-%attr(755,root,root) /var/lib/pcp/pmdas/vmware/Install
-%attr(755,root,root) /var/lib/pcp/pmdas/vmware/Remove
-%attr(755,root,root) /var/lib/pcp/pmdas/vmware/pmdavmware.pl
 %dir /var/lib/pcp/pmdas/weblog
 %doc /var/lib/pcp/pmdas/weblog/README
 %attr(755,root,root) /var/lib/pcp/pmdas/weblog/Install
@@ -1436,7 +1413,6 @@ fi
 %{_mandir}/man1/pmdaredis.1*
 %{_mandir}/man1/pmdaroomtemp.1*
 %{_mandir}/man1/pmdaroot.1*
-%{_mandir}/man1/pmdarpm.1*
 %{_mandir}/man1/pmdarsyslog.1*
 %{_mandir}/man1/pmdasample.1*
 %{_mandir}/man1/pmdasendmail.1*
