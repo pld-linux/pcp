@@ -3,7 +3,7 @@
 @@ -3143,7 +3143,7 @@
  
  dnl man pages (source)
- AC_MSG_CHECKING([if man pages should packaged])
+ AC_MSG_CHECKING([if man pages should be packaged])
 -have_manpages=false
 +have_manpages=true
  have_gzipped_manpages=false

@@ -14,15 +14,14 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	5.3.6
-Release:	7
+Version:	6.3.6
+Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	https://github.com/performancecopilot/pcp/archive/%{version}/%{name}-%{version}.tar.gz
-# Source0-md5:	c753c01cad55719e67fc62b7a20bc0ef
+# Source0-md5:	6ce46b423d29fa1870174a09886699b6
 Patch0:		build-man.patch
 Patch1:		%{name}-opt.patch
-Patch2:		%{name}-nspr.patch
 Patch3:		%{name}-saslconfdir.patch
 Patch5:		python-install.patch
 Patch6:		install-icons.patch
@@ -232,7 +231,6 @@ Sondy systemtap/dtrace dla PCP.
 %setup -q
 %patch -P 0 -p1
 %patch -P 1 -p1
-%patch -P 2 -p1
 %patch -P 3 -p1
 %patch -P 5 -p1
 %patch -P 6 -p1
@@ -528,8 +526,6 @@ fi
 %{systemdunitdir}/pmie.service
 %{systemdunitdir}/pmlogger_check.service
 %{systemdunitdir}/pmlogger_check.timer
-%{systemdunitdir}/pmlogger_daily_report.service
-%{systemdunitdir}/pmlogger_daily_report.timer
 %{systemdunitdir}/pmlogger_daily.service
 %{systemdunitdir}/pmlogger_daily.timer
 %{systemdunitdir}/pmlogger.service
@@ -538,7 +534,6 @@ fi
 %dir /var/lib/pcp/config/derived
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/derived/cpu-util.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/derived/iostat.conf
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/derived/mssql.conf
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/derived/proc.conf
 %dir /var/lib/pcp/config/pmafm
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmafm/pcp
@@ -650,8 +645,6 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/mmv/summary
 %dir /var/lib/pcp/config/pmlogconf/mysql
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/mysql/summary
-%dir /var/lib/pcp/config/pmlogconf/mssql
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/mssql/summary
 %dir /var/lib/pcp/config/pmlogconf/netcheck
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/netcheck/summary
 %dir /var/lib/pcp/config/pmlogconf/netfilter
@@ -1003,12 +996,6 @@ fi
 /var/lib/pcp/pmdas/mounts/pmns
 /var/lib/pcp/pmdas/mounts/root
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/mounts/mounts.conf
-%dir /var/lib/pcp/pmdas/mssql
-%attr(755,root,root) /var/lib/pcp/pmdas/mssql/Install
-%attr(755,root,root) /var/lib/pcp/pmdas/mssql/Remove
-%attr(755,root,root) /var/lib/pcp/pmdas/mssql/Upgrade
-%attr(755,root,root) /var/lib/pcp/pmdas/mssql/pmdamssql.python
-%config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmdas/mssql/mssql.conf
 %dir /var/lib/pcp/pmdas/mysql
 %attr(755,root,root) /var/lib/pcp/pmdas/mysql/README
 %attr(755,root,root) /var/lib/pcp/pmdas/mysql/Install
@@ -1395,7 +1382,6 @@ fi
 %{_mandir}/man1/pmdamic.1*
 %{_mandir}/man1/pmdammv.1*
 %{_mandir}/man1/pmdamounts.1*
-%{_mandir}/man1/pmdamssql.1*
 %{_mandir}/man1/pmdamysql.1*
 %{_mandir}/man1/pmdanetcheck.1*
 %{_mandir}/man1/pmdanetfilter.1*
