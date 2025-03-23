@@ -15,7 +15,7 @@ Summary:	Performance Co-Pilot - system level performance monitoring and manageme
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
 Version:	6.3.6
-Release:	1
+Release:	2
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	https://github.com/performancecopilot/pcp/archive/%{version}/%{name}-%{version}.tar.gz
@@ -25,6 +25,7 @@ Patch1:		%{name}-opt.patch
 Patch3:		%{name}-saslconfdir.patch
 Patch5:		python-install.patch
 Patch6:		install-icons.patch
+Patch7:		no-perl-time-check.patch
 URL:		http://pcp.io/
 BuildRequires:	autoconf >= 2.60
 BuildRequires:	avahi-devel
@@ -43,6 +44,7 @@ BuildRequires:	nss-devel >= 3
 BuildRequires:	openssl-devel
 BuildRequires:	perl-DBD-Pg
 BuildRequires:	perl-DBD-mysql
+BuildRequires:	perl-DBI
 BuildRequires:	perl-ExtUtils-MakeMaker
 BuildRequires:	perl-File-Slurp
 BuildRequires:	perl-JSON
@@ -234,6 +236,7 @@ Sondy systemtap/dtrace dla PCP.
 %patch -P 3 -p1
 %patch -P 5 -p1
 %patch -P 6 -p1
+%patch -P 7 -p1
 
 %{__sed} -E -i -e '1s,#!\s*/usr/bin/env\s+perl(\s|$),#!%{__perl}\1,' \
       src/ganglia2pcp/ganglia2pcp \

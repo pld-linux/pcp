@@ -1,0 +1,35 @@
+--- pcp-6.3.6/configure.ac~	2025-03-23 21:22:27.000000000 +0100
++++ pcp-6.3.6/configure.ac	2025-03-23 21:45:07.153316537 +0100
+@@ -1388,32 +1388,6 @@
+         $pcp_perl_prog -e "use ExtUtils::MakeMaker" 2>/dev/null
+         if test $? -eq 0; then
+ 	    AC_MSG_RESULT([yes])
+-	    if $force_time_t; then
+-		dnl forcing -D_TIME_BITS=64 for PCP libs, but need to check
+-		dnl that installed Perl is built for _TIME_BITS=64, else
+-		dnl we cannot build compatibile PCP Perl components
+-		AC_MSG_CHECKING([if Perl is Y2038-safe])
+-		$pcp_perl_prog -MConfig -e 'print "$Config{sGMTIME_max}\n";' >conftest.out
+-		case `cat conftest.out`
+-		in
+-		    2147483647)
+-			    # definitely 32-bit time_t for Perl build, we
+-			    # can't play in this sandpit
+-			    #
+-			    AC_MSG_RESULT([no])
+-			    have_perl=false
+-			    ;;
+-		    67768036191676799)
+-			    # all good
+-			    #
+-			    AC_MSG_RESULT([yes])
+-			    ;;
+-		    *)
+-			    echo >&2 "Warning: Perl config sGMTIME_max=`cat conftest.out` unexpected"
+-			    AC_MSG_RESULT([yes])
+-			    ;;
+-		esac
+-	    fi
+         else
+ 	    AC_MSG_RESULT([no])
+ 	    have_perl=false
