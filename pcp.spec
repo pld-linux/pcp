@@ -15,7 +15,7 @@ Summary:	Performance Co-Pilot - system level performance monitoring and manageme
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
 Version:	6.3.6
-Release:	1
+Release:	2
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	https://github.com/performancecopilot/pcp/archive/%{version}/%{name}-%{version}.tar.gz
@@ -1543,6 +1543,8 @@ fi
 %attr(755,root,root) %{_bindir}/pminfo
 # NOTE: some of them are compatibility symlinks; regular files are SONAMEs directly
 %attr(755,root,root) %{_libdir}/libpcp.so.3
+%attr(755,root,root) %{_libdir}/libpcp_archive.so.1
+%attr(755,root,root) %{_libdir}/libpcp_fault.so.3
 %attr(755,root,root) %{_libdir}/libpcp_gui.so.2
 %attr(755,root,root) %{_libdir}/libpcp_import.so.1
 %attr(755,root,root) %{_libdir}/libpcp_mmv.so.1
@@ -1601,6 +1603,8 @@ fi
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libpcp.so
+%attr(755,root,root) %{_libdir}/libpcp_archive.so
+%attr(755,root,root) %{_libdir}/libpcp_fault.so
 %attr(755,root,root) %{_libdir}/libpcp_gui.so
 %attr(755,root,root) %{_libdir}/libpcp_import.so
 %attr(755,root,root) %{_libdir}/libpcp_mmv.so
@@ -1620,12 +1624,15 @@ fi
 %{_mandir}/man3/Qmc*.3*
 %{_mandir}/man3/QMC.3*
 %{_pkgconfigdir}/libpcp.pc
+%{_pkgconfigdir}/libpcp_archive.pc
 %{_pkgconfigdir}/libpcp_import.pc
 %{_pkgconfigdir}/libpcp_pmda.pc
 
 %files static
 %defattr(644,root,root,755)
 %{_libdir}/libpcp.a
+%{_libdir}/libpcp_archive.a
+%{_libdir}/libpcp_fault.a
 %{_libdir}/libpcp_gui.a
 %{_libdir}/libpcp_import.a
 %{_libdir}/libpcp_mmv.a
