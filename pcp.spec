@@ -14,19 +14,19 @@
 Summary:	Performance Co-Pilot - system level performance monitoring and management
 Summary(pl.UTF-8):	Performance Co-Pilot - monitorowanie i zarządzanie wydajnością na poziomie systemu
 Name:		pcp
-Version:	6.3.6
-Release:	3
+Version:	7.0.1
+Release:	1
 License:	LGPL v2.1 (libraries), GPL v2 (the rest)
 Group:		Applications/System
 Source0:	https://github.com/performancecopilot/pcp/archive/%{version}/%{name}-%{version}.tar.gz
-# Source0-md5:	6ce46b423d29fa1870174a09886699b6
+# Source0-md5:	c5a90125a3e932d01e47ac9187946601
 Patch0:		build-man.patch
 Patch1:		%{name}-opt.patch
 Patch3:		%{name}-saslconfdir.patch
 Patch5:		python-install.patch
 Patch6:		install-icons.patch
 Patch7:		no-perl-time-check.patch
-URL:		http://pcp.io/
+URL:		https://pcp.io/
 BuildRequires:	autoconf >= 2.60
 BuildRequires:	avahi-devel
 BuildRequires:	bison
@@ -54,7 +54,6 @@ BuildRequires:	perl-base
 BuildRequires:	perl-libwww
 BuildRequires:	perl-tools-pod
 BuildRequires:	pkgconfig
-BuildRequires:	python-devel >= 2.0
 BuildRequires:	python3-devel >= 1:3.2
 BuildRequires:	python3-psycopg2
 BuildRequires:	readline-devel
@@ -77,7 +76,7 @@ BuildRequires:	qt5-qmake
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	libmicrohttpd >= 0.9.10
 Requires:	perl-pcp = %{version}-%{release}
-Requires:	python-pcp = %{version}-%{release}
+Requires:	python3-pcp = %{version}-%{release}
 Requires(post):	/usr/bin/gawk
 Suggests:	crondaemon
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -179,23 +178,12 @@ Perl interface to PCP libraries.
 %description -n perl-pcp -l pl.UTF-8
 Perlowy interfejs do bibliotek PCP.
 
-%package -n python-pcp
-Summary:	Python 2 interface to PCP libraries
-Summary(pl.UTF-8):	Interfejs Pythona 2 do bibliotek PCP
-Group:		Development/Languages/Python
-Requires:	%{name}-libs = %{version}-%{release}
-
-%description -n python-pcp
-Python 2 interface to PCP libraries.
-
-%description -n python-pcp -l pl.UTF-8
-Interfejs Pythona 2 do bibliotek PCP.
-
 %package -n python3-pcp
 Summary:	Python 3 interface to PCP libraries
 Summary(pl.UTF-8):	Interfejs Pythona 3 do bibliotek PCP
 Group:		Development/Languages/Python
 Requires:	%{name}-libs = %{version}-%{release}
+Obsoletes:	python-pcp < 7
 
 %description -n python3-pcp
 Python 3 interface to PCP libraries.
@@ -256,7 +244,6 @@ find \( -name '*.py' -o -name '*.python' \) -print0 | xargs -0 \
 
 %{__sed} -E -i -e '1s,#!\s*/usr/bin/env\s+pmpython(\s|$),#!%{_bindir}/pmpython\1,' \
       src/pmdas/haproxy/connect \
-      src/pmdas/json/generate_ceph_metadata \
       src/pmdas/libvirt/connect \
       src/pmdas/netcheck/pyprep
 
@@ -291,11 +278,6 @@ install -d $RPM_BUILD_ROOT%{_sysconfdir}
 	HAVE_XZED_MANPAGES=false
 
 install -p src/pmns/stdpmid $RPM_BUILD_ROOT/var/lib/pcp/pmns
-
-install -d $RPM_BUILD_ROOT%{systemdtmpfilesdir}
-cat >$RPM_BUILD_ROOT%{systemdtmpfilesdir}/pcp.conf <<EOF
-d /var/run/pcp 0775 pcp pcp -
-EOF
 
 %py_ocomp $RPM_BUILD_ROOT%{py_sitedir}
 %py_postclean
@@ -514,7 +496,6 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/pmlogger
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/pmlogger_timers
 %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/pmproxy
-%attr(754,root,root) /etc/rc.d/init.d/pcp
 %attr(754,root,root) /etc/rc.d/init.d/pmcd
 %attr(754,root,root) /etc/rc.d/init.d/pmie
 %attr(754,root,root) /etc/rc.d/init.d/pmlogger
@@ -553,7 +534,7 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/shping.*
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmchart/Web.*
 %attr(775,pcp,pcp) %dir /var/lib/pcp/config/pmda
-%dir /var/lib/pcp/config/pmie
+%attr(775,pcp,pcp) %dir /var/lib/pcp/config/pmie
 %dir /var/lib/pcp/config/pmieconf
 %dir /var/lib/pcp/config/pmieconf/cisco
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmieconf/cisco/in_util
@@ -755,7 +736,7 @@ fi
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/gfs2/gfs2-base
 %dir /var/lib/pcp/config/pmlogconf/statsd
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogconf/statsd/statsd
-%dir /var/lib/pcp/config/pmlogger
+%attr(775,pcp,pcp) %dir /var/lib/pcp/config/pmlogger
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogger/config.pmstat
 %dir /var/lib/pcp/config/pmlogrewrite
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/config/pmlogrewrite/cgroup_units.conf
@@ -1302,9 +1283,11 @@ fi
 %attr(775,pcp,pcp) %dir /var/lib/pcp/tmp/pmlogger
 %attr(775,pcp,pcp) %dir /var/log/pcp
 %attr(775,pcp,pcp) %dir /var/log/pcp/pmcd
+%attr(775,pcp,pcp) %dir /var/log/pcp/pmfind
 %attr(775,pcp,pcp) %dir /var/log/pcp/pmie
 %attr(775,pcp,pcp) %dir /var/log/pcp/pmlogger
 %attr(775,pcp,pcp) %dir /var/log/pcp/pmproxy
+%attr(775,pcp,pcp) %dir /var/log/pcp/sa
 %{_mandir}/man1/PCPCompat.1*
 %{_mandir}/man1/PCPIntro.1*
 %{_mandir}/man1/chkhelp.1*
@@ -1371,7 +1354,6 @@ fi
 %{_mandir}/man1/pmdahaproxy.1*
 %{_mandir}/man1/pmdaib.1*
 %{_mandir}/man1/pmdajbd2.1*
-%{_mandir}/man1/pmdajson.1*
 %{_mandir}/man1/pmdakernel.1*
 %{_mandir}/man1/pmdakvm.1*
 %{_mandir}/man1/pmdalibvirt.1*
@@ -1544,7 +1526,7 @@ fi
 # NOTE: some of them are compatibility symlinks; regular files are SONAMEs directly
 %attr(755,root,root) %{_libdir}/libpcp.so.3
 %attr(755,root,root) %{_libdir}/libpcp_archive.so.1
-%attr(755,root,root) %{_libdir}/libpcp_fault.so.3
+%attr(755,root,root) %{_libdir}/libpcp_fault.so.4
 %attr(755,root,root) %{_libdir}/libpcp_gui.so.2
 %attr(755,root,root) %{_libdir}/libpcp_import.so.1
 %attr(755,root,root) %{_libdir}/libpcp_mmv.so.1
@@ -1589,8 +1571,7 @@ fi
 /var/lib/pcp/pmns/stdpmid.pcp
 %config(noreplace) %verify(not md5 mtime size) /var/lib/pcp/pmns/stdpmid.local
 %ghost /var/lib/pcp/pmns/stdpmid
-%attr(775,pcp,pcp) %dir /run/pcp
-%{systemdtmpfilesdir}/pcp.conf
+%{systemdtmpfilesdir}/pcp-reboot-init.conf
 %{_mandir}/man1/newhelp.1*
 %{_mandir}/man1/pmcpp.1*
 %{_mandir}/man1/pminfo.1*
@@ -1663,17 +1644,6 @@ fi
 %{_mandir}/man3/PCP::LogSummary.3pm*
 %{_mandir}/man3/PCP::MMV.3pm*
 %{_mandir}/man3/PCP::PMDA.3pm*
-
-%files -n python-pcp
-%defattr(644,root,root,755)
-%attr(755,root,root) %{py_sitedir}/cmmv.so
-%attr(755,root,root) %{py_sitedir}/cpmapi.so
-%attr(755,root,root) %{py_sitedir}/cpmda.so
-%attr(755,root,root) %{py_sitedir}/cpmgui.so
-%attr(755,root,root) %{py_sitedir}/cpmi.so
-%dir %{py_sitedir}/pcp
-%{py_sitedir}/pcp/*.py[co]
-%{py_sitedir}/pcp-*-py*.egg-info
 
 %files -n python3-pcp
 %defattr(644,root,root,755)

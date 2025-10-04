@@ -1,6 +1,6 @@
---- pcp-4.1.0/src/include/builddefs.in~	2018-06-15 03:48:02.000000000 +0200
-+++ pcp-4.1.0/src/include/builddefs.in	2018-07-04 17:51:41.172261146 +0200
-@@ -693,13 +693,7 @@ SETUP_PY_BUILD_OPTIONS = --include-dirs=
+--- pcp-7.0.1/src/include/builddefs.in.orig	2025-09-21 07:17:17.000000000 +0200
++++ pcp-7.0.1/src/include/builddefs.in	2025-10-03 18:50:35.362082340 +0200
+@@ -713,13 +713,7 @@ SETUP_PY_BUILD_OPTIONS += --include-dirs
  SETUP_PY_BUILD_OPTIONS += --library-dirs=$(TOPDIR)/src/libpcp/src:$(TOPDIR)/src/libpcp_pmda/src:$(TOPDIR)/src/libpcp_gui/src:$(TOPDIR)/src/libpcp_import/src:$(TOPDIR)/src/libpcp_mmv/src
  SETUP_PY_INSTALL_OPTIONS = --skip-build
  SETUP_PY_INSTALL_OPTIONS += --root="$${DIST_ROOT:-/}"
@@ -11,6 +11,6 @@
 -else
  SETUP_PY_INSTALL_OPTIONS += --prefix=$(PYTHON_PREFIX)
 -endif
- ifeq "$(ENABLE_PYTHON3)" "true"
- SETUP_PY_BUILD_OPTIONS += -DENABLE_PYTHON3
- endif
+ # RPM byte-compiles and installs results in our DIST_ROOT, cater for this:
+ ifeq "$(shell [ '$(TARGET_OS)' = linux -a '$(PACKAGE_DISTRIBUTION)' != gentoo \
+ 	      ] && echo 1)" "1"
