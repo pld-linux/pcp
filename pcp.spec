@@ -24,21 +24,34 @@ Patch5:		python-install.patch
 Patch6:		install-icons.patch
 Patch7:		no-perl-time-check.patch
 URL:		https://pcp.io/
-BuildRequires:	autoconf >= 2.60
+BuildRequires:	HdrHistogram_c-devel
+BuildRequires:	autoconf >= 2.63
 BuildRequires:	avahi-devel
 BuildRequires:	bison
+# for bpftrace PMDA
+#BuildRequires:	bpftrace	# bpftrace.org, github.com/bpftrace/bpftrace
+# for bpf PMDA
+#BuildRequires:	clang >= 10
 BuildRequires:	cyrus-sasl-devel >= 2
+BuildRequires:	device-mapper-devel
+BuildRequires:	elfutils-devel
 BuildRequires:	flex
+BuildRequires:	inih-devel
 %ifarch i386
 BuildRequires:	libatomic-devel
 %endif
+BuildRequires:	libbpf-devel >= 1.0.0
+#BuildRequires:	libchan-devel	# github.com/tylertreat/chan, for statsd PMDA
+BuildRequires:	libdrm-devel >= 2.4.77
 BuildRequires:	libibmad-devel
 BuildRequires:	libibumad-devel
 BuildRequires:	libmicrohttpd-devel >= 0.9.10
+BuildRequires:	libpfm-devel
 BuildRequires:	libuv-devel >= 1
+BuildRequires:	ncurses-devel
 BuildRequires:	nspr-devel >= 4
 BuildRequires:	nss-devel >= 3
-BuildRequires:	openssl-devel
+BuildRequires:	openssl-devel >= 1.1.1
 BuildRequires:	perl-DBD-Pg
 BuildRequires:	perl-DBD-mysql
 BuildRequires:	perl-DBI
@@ -47,35 +60,55 @@ BuildRequires:	perl-File-Slurp
 BuildRequires:	perl-JSON
 BuildRequires:	perl-Net-SNMP
 BuildRequires:	perl-XML-LibXML
+BuildRequires:	perl-YAML-LibYAML
 BuildRequires:	perl-base
 BuildRequires:	perl-libwww
 BuildRequires:	perl-tools-pod
 BuildRequires:	pkgconfig
-BuildRequires:	python-devel >= 2.0
-BuildRequires:	python3-devel >= 1:3.2
+#BuildRequires:	postfix-qshape /usr/share/doc/packages/postfix-doc/auxiliary/qshape/qshape.pl for postfix PMDA
+BuildRequires:	python-devel >= 1:2.7
+BuildRequires:	python3-devel >= 1:3.6
+BuildRequires:	python3-jsonpointer
 BuildRequires:	python3-psycopg2
+BuildRequires:	python3-six
+#TODO
+#BuildRequires:	python3-bpfcc		# github.com/iovisor/bcc, for bcc PMDA
+#BuildRequires:	python3-libvirt		# for libvirt PMDA
+#BuildRequires:	python3-lxml		# for libvirt PMDA
+#BuildRequires:	python3-openpyxl	# for ?
+#BuildRequires:	python3-pyarrow		# for ?
+#BuildRequires:	python3-pymongo		# for mongodb PMDA
+#BuildRequires:	python3-pyodbc		# for mssql PMDA
+#BuildRequires:	python3-requests	# for influxdb
+#BuildRequires:	python3-rtslib		# for LIO PMDA
+#BuildRequires:	python3-setuptools	# for ?
 BuildRequires:	readline-devel
 BuildRequires:	rpm-devel
 BuildRequires:	rpm-perlprov
 BuildRequires:	rpm-pythonprov
 BuildRequires:	rpmbuild(macros) >= 1.219
-BuildRequires:	systemd-devel
+BuildRequires:	systemd-devel >= 1:239
 %{?with_systemtap:BuildRequires:	systemtap-sdt-devel}
+BuildRequires:	xz-devel
+BuildRequires:	zfs-devel
+BuildRequires:	zlib-devel >= 1.0.0
 %if %{with qt}
-BuildRequires:	Qt5Concurrent-devel
-BuildRequires:	Qt5Core-devel
-BuildRequires:	Qt5Gui-devel
-BuildRequires:	Qt5Network-devel
-BuildRequires:	Qt5PrintSupport-devel
-BuildRequires:	Qt5Svg-devel
-BuildRequires:	qt5-build
-BuildRequires:	qt5-qmake
+# or qt6 6.0+, but must be consistent with SoQt
+BuildRequires:	Qt5Concurrent-devel >= 5.6
+BuildRequires:	Qt5Core-devel >= 5.6
+BuildRequires:	Qt5Gui-devel >= 5.6
+BuildRequires:	Qt5Network-devel >= 5.6
+BuildRequires:	Qt5PrintSupport-devel >= 5.6
+BuildRequires:	Qt5Svg-devel >= 5.6
+BuildRequires:	SoQt-devel
+BuildRequires:	qt5-build >= 5.6
+BuildRequires:	qt5-qmake >= 5.6
 %endif
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	libmicrohttpd >= 0.9.10
 Requires:	perl-pcp = %{version}-%{release}
 Requires:	python-pcp = %{version}-%{release}
-Requires(post):	/usr/bin/gawk
+Requires:	systemd-units >= 1:239
 Suggests:	crondaemon
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -124,6 +157,7 @@ takich jak pmchart czy pmval.
 Summary:	PCP libraries
 Summary(pl.UTF-8):	Biblioteki PCP
 Group:		Libraries
+Requires(post):	/usr/bin/gawk
 Requires(post,postun):	/sbin/ldconfig
 Requires(pre):	/bin/id
 Requires(pre):	/usr/bin/getgid
@@ -262,13 +296,15 @@ find \( -name '*.py' -o -name '*.python' \) -print0 | xargs -0 \
       src/pmdas/bash/test-trace.sh
 
 %build
-QTDIR=%{_libdir}/qt5; export QTDIR
 %{__autoconf}
 %configure \
-	--with-qt%{!?with_qt:=no}t \
+	QMAKE=/usr/bin/qmake-qt5 \
+	--with-qt%{!?with_qt:=no} \
 	--with-static-probes%{!?with_systemtap:=no} \
 	--with-python_prefix=%{_prefix} \
-	--with-rcdir=/etc/rc.d/init.d
+	--with-rcdir=/etc/rc.d/init.d \
+	--with-rundir=/run/pcp
+
 # ensure not *zipping man pages on install
 %{__sed} -i -e '/^HAVE_.*ED_MANPAGES/s,true,false,' src/include/builddefs
 
